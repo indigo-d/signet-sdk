@@ -1,4 +1,5 @@
 var keypair = require('keypair');
+var request = require('request');
 
 class SignetKeyPair {
     constructor() {
@@ -38,9 +39,21 @@ class SignetKeySet {
 }
 
 class SignetEntity {
-    constructor(publicKeys) {
-        // TODO: This should become an API call that returns the ID
-        this.entityID = publicKeys[0];
+    constructor(guid, publicKeys) {
+        this.host = 'http://localhost:1337';
+        var params = {
+            guid: guid,
+            xid: 'XID3',
+            verkey: publicKeys[0].substring(0,250)
+        };
+        var url = this.host + '/entity/';
+        console.log('Sending POST request to URL: ' + url);
+        request.post({url: url, form: params}, function (error, response, body) {
+            console.log('error:', error); // Print the error if one occurred
+            console.log('statusCode:', response.statusCode);
+            console.log('body:', body); // Print the HTML for the Google homepage.
+        });
+        this.entityID = guid;
     }
 }
 
@@ -60,10 +73,10 @@ class SignetAgent {
      *   02) Create an entity on the Signet API
      *   03) Associate the entity keys with the newly created entity
      */
-    createEntity() {
+    createEntity(guid) {
         console.log('Starting createEntity()');
         var entityKeySet = new SignetKeySet();
-        var entity = new SignetEntity(entityKeySet.getPublicKeys());
+        var entity = new SignetEntity(guid, entityKeySet.getPublicKeys());
         this.addEntityKeySetToKeyChain(entity.entityID, entityKeySet);
         console.log('Finished createEntity()');
         return entity;

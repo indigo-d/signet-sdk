@@ -25,5 +25,8 @@
   "devDependencies": {
     "keypair": "^1.0.1",
     "mocha": "^5.0.5"
+  },
+  "dependencies": {
+    "request": "^2.85.0"
   }
 }
