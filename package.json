@@ -1,0 +1,32 @@
+{
+  "name": "signet-sdk",
+  "version": "0.0.1",
+  "description": "Signet SDK in Javascript, implemented as a node module.  It is meant to be used within React JS and React Native applications.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/indigo-d/signet-sdk.git"
+  },
+  "keywords": [
+    "signet",
+    "sdk",
+    "signet",
+    "sdk"
+  ],
+  "author": "Vivek Aanand Ganesan (onevivek@yahoo.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/indigo-d/signet-sdk/issues"
+  },
+  "homepage": "https://github.com/indigo-d/signet-sdk#readme",
+  "devDependencies": {
+    "keypair": "^1.0.1",
+    "mocha": "^5.0.5"
+  },
+  "dependencies": {
+    "request": "^2.85.0"
+  }
+}
