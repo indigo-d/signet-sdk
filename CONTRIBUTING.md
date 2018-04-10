@@ -2,7 +2,7 @@
 
 Developer notes for contributing to this Node JS library.
 
-## Development Setup
+## Development Environment Setup
 
   - Ubuntu 16.04 LTS setup:
     - To setup NodeJS:
@@ -12,9 +12,13 @@ Developer notes for contributing to this Node JS library.
       - Also, ``` nodejs --version ``` should show 'v9.11.1'
       - And, ``` npm -V ``` should show 'npm@5.6.0 /usr/lib/node_modules/npm'
 
+## Software Setup
+
+  - Clone the repo (make sure you are on the 'develop' branch)
+  - Run: ``` npm install ```
+
 ## Testing Setup
 
 Once Node JS is installed, do the following:
 
-  - To install mocha globally: ``` npm install --global mocha ```
-  - To add mocha to this package's module dependenices: ``` npm install --save-dev mocha ```
+  - Run: ``` npm test ```
