@@ -1,5 +1,23 @@
 var keypair = require('keypair');
-var request = require('request');
+var axios = require('axios');
+
+class SignetAPIClient {
+    constructor(signet_api_endpoint) {
+        this.signet_api_endpoint = signet_api_endpoint;
+    }
+
+    // Make POST request to Signet API
+    doPost(url_path, params, callback) {
+        let url = this.signet_api_endpoint + url_path;
+        console.log('Sending POST request to URL: ' + url);
+        console.log('Params:', params);
+        axios.post(url, params).then(
+            function (resp) { callback(resp); }
+        ).catch(
+            function(error) { console.log(error); }
+        );
+    }
+}
 
 class SignetKeyPair {
     constructor() {
@@ -39,21 +57,9 @@ class SignetKeySet {
 }
 
 class SignetEntity {
-    constructor(guid, publicKeys) {
-        this.host = 'http://localhost:1337';
-        var params = {
-            guid: guid,
-            xid: 'XID3',
-            verkey: publicKeys[0].substring(0,250)
-        };
-        var url = this.host + '/entity/';
-        console.log('Sending POST request to URL: ' + url);
-        request.post({url: url, form: params}, function (error, response, body) {
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response.statusCode);
-            console.log('body:', body); // Print the HTML for the Google homepage.
-        });
-        this.entityID = guid;
+    constructor(guid, verkey) {
+        this.guid = guid;
+        this.verkey = verkey;
     }
 }
 
@@ -63,35 +69,49 @@ class SignetAgent {
         this.keyChain = {};
     }
 
-    addEntityKeySetToKeyChain(entityID, keySet) {
-        this.keyChain[entityID] = keySet;
+    addEntityKeySetToKeyChain(guid, keySet) {
+        this.keyChain[guid] = keySet;
+    }
+}
+
+class SignetSDK {
+    constructor(signet_api_endpoint) {
+        this.version = "0.0.1";
+        this.client = undefined;
+    }
+
+    // Create a client object for the Signet API
+    initialize(signet_api_endpoint) {
+        this.client = new SignetAPIClient(signet_api_endpoint);
+    }
+
+    // Create Agent call (Note: this does not call the Signet API)
+    createAgent() {
+        console.log('Starting createAgent()');
+        var agent = new SignetAgent();
+        console.log('Finished createAgent()');
+        return agent;
     }
 
     /*
      * Method to create an entity which involves the following:
      *   01) Generate Signet key set
      *   02) Create an entity on the Signet API
-     *   03) Associate the entity keys with the newly created entity
+     *   03) Add entity key set to agent key chain
      */
-    createEntity(guid) {
+    createEntity(agent, guid, callback) {
         console.log('Starting createEntity()');
-        var entityKeySet = new SignetKeySet();
-        var entity = new SignetEntity(guid, entityKeySet.getPublicKeys());
-        this.addEntityKeySetToKeyChain(entity.entityID, entityKeySet);
+        let entityKeySet = new SignetKeySet();
+        let publicKeys = entityKeySet.getPublicKeys();
+        let verkey = publicKeys[0].substring(0,250);
+        let params = { guid: guid, verkey: verkey };
+        this.client.doPost('/entity/', params, function (resp) {
+            console.log('Success: ' + resp.data);
+            agent.addEntityKeySetToKeyChain(guid, entityKeySet);
+            let entity = new SignetEntity(guid, verkey);
+            callback(entity);
+        });
         console.log('Finished createEntity()');
-        return entity;
-    }
-}
-
-class SignetSDK {
-    constructor() {
-        this.version = "0.0.1";
-    }
-    createAgent() {
-        console.log('Starting createAgent()');
-        var agent = new SignetAgent();
-        console.log('Finished createAgent()');
-        return agent;
     }
 }
 
