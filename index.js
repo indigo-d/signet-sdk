@@ -1,5 +1,6 @@
 var keypair = require('keypair');
 var axios = require('axios');
+var async = require('async');
 
 class SignetAPIClient {
     constructor(signet_api_endpoint) {
@@ -7,15 +8,12 @@ class SignetAPIClient {
     }
 
     // Make POST request to Signet API
-    doPost(url_path, params, callback) {
+    doPost(url_path, params) {
         let url = this.signet_api_endpoint + url_path;
         console.log('Sending POST request to URL: ' + url);
         console.log('Params:', params);
-        axios.post(url, params).then(
-            function (resp) { callback(resp); }
-        ).catch(
-            function(error) { console.log(error); }
-        );
+        // Note: the following method call returns a promise
+        return axios.post(url, params);
     }
 }
 
@@ -94,23 +92,29 @@ class SignetSDK {
     }
 
     /*
-     * Method to create an entity which involves the following:
+     * Async method to create an entity which involves the following:
      *   01) Generate Signet key set
      *   02) Create an entity on the Signet API
      *   03) Add entity key set to agent key chain
+     * For the synchronous-look-alike version, look at createEntity method
+     *   in the SignetAgent class.
      */
-    createEntity(agent, guid, callback) {
+    async createEntity(agent, guid) {
         console.log('Starting createEntity()');
         let entityKeySet = new SignetKeySet();
         let publicKeys = entityKeySet.getPublicKeys();
         let verkey = publicKeys[0].substring(0,250);
         let params = { guid: guid, verkey: verkey };
-        this.client.doPost('/entity/', params, function (resp) {
+        // Make the REST API call and wait for it to finish
+        try {
+            let resp = await this.client.doPost('/entity/', params);
             console.log('Success: ' + resp.data);
             agent.addEntityKeySetToKeyChain(guid, entityKeySet);
             let entity = new SignetEntity(guid, verkey);
-            callback(entity);
-        });
+            return entity;
+        } catch (err) {
+            console.log(err.toString());
+        }
         console.log('Finished createEntity()');
     }
 }
