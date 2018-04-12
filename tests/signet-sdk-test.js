@@ -21,6 +21,11 @@ var entity = undefined;
 
 // Includes
 describe('Signet SDK Tests', function () {
+    // Setup the sandbox and the setup and cleanup functions
+    let sandbox;
+    beforeEach(() => sandbox = sinon.sandbox.create());
+     afterEach(() => sandbox.restore());
+
     // Verify that the object is of the right class
     it('has correct class name', function () {
         assert.equal(sdk.constructor.name, 'SignetSDK');
@@ -76,7 +81,7 @@ describe('Signet SDK Tests', function () {
     it('getSigningKey should return management key', async function () {
         console.log('== =================================================');
         console.log('== getSigningKey test starting');
-        var key = agent.getSigningKey(guid);
+        let key = agent.getSigningKey(guid);
         console.log(key);
         assert.notEqual(key, undefined, 'Signing key is not defined');
         assert.equal(key.constructor.name, 'SignetKeyPair');
