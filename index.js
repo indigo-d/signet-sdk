@@ -152,12 +152,13 @@ class SignetSDK {
     }
 
     /*
-     * Async method to fetch an entity from the Signet API Service
+     * Async method to fetch an entity from the Signet API Service.
      * Returns undefined for API call failure or any other run-time error.
      */
     async fetchEntity(guid) {
         console.log('-- -------------------------------------------------');
         console.log('-- Starting fetchEntity()');
+        console.log("--   guid = '" + guid + "'");
         let params = {};
         var entity = undefined;
         // Make the REST API call and wait for it to finish
@@ -165,11 +166,37 @@ class SignetSDK {
             let resp = await this.client.doGet('/entity/'+guid,params);
             console.log('-- GET call response: ', resp.status, resp.data);
             entity = new SignetEntity(resp.data.guid, resp.data.verkey);
+            if (resp.data.xid) entity.xid = resp.data.xid;
         } catch (err) {
             console.log(err.toString());
         }
         console.log('-- Entity object to be returned: ', entity);
         console.log('-- Finished fetchEntity()');
+        console.log('-- -------------------------------------------------');
+        return entity;
+    }
+
+    /*
+     * Async method to fetch an entity from the Signet API Service by XID.
+     * Returns undefined for API call failure or any other run-time error.
+     */
+    async fetchEntityByXID(xid) {
+        console.log('-- -------------------------------------------------');
+        console.log('-- Starting fetchEntityByXID()');
+        console.log("--   xid = '" + xid + "'");
+        let params = { xid: xid };
+        var entity = undefined;
+        // Make the REST API call and wait for it to finish
+        try {
+            let resp = await this.client.doGet('/entity/fetchEntityByXID/',params);
+            console.log('-- GET call response: ', resp.status, resp.data);
+            entity = new SignetEntity(resp.data.guid, resp.data.verkey);
+            entity.xid = resp.data.xid;
+        } catch (err) {
+            console.log(err.toString());
+        }
+        console.log('-- Entity object to be returned: ', entity);
+        console.log('-- Finished fetchEntityByXID()');
         console.log('-- -------------------------------------------------');
         return entity;
     }
