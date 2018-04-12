@@ -80,6 +80,23 @@ describe('Signet SDK Tests', function () {
         console.log('== fetchEntity test finished');
         console.log('== =================================================');
     });
+    // Verify that the setXID returns true
+    it('setXID should return true and update XID', async function () {
+        console.log('== =================================================');
+        console.log('== setXID test starting');
+        // Stub the axios post call!
+        const resolved = new Promise((r) => r({
+            status: 200, data: { guid: guid, xid: xid+'-mod' }
+        }));
+        sandbox.stub(axios, 'post').returns(resolved);
+        let retVal = await sdk.setXID(agent, entity, xid+'-mod');
+        console.log('== Return value of setXID: ', retVal);
+        assert(retVal, 'setXID did not return true');
+        assert.equal(entity.guid, guid);
+        assert.equal(entity.xid, xid+'-mod');
+        console.log('== setXID test finished');
+        console.log('== =================================================');
+    });
     // Verify that the fetchEntityByXID returns an Entity object
     it('fetchEntityByXID should return entity object', async function () {
         console.log('== =================================================');

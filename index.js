@@ -152,6 +152,31 @@ class SignetSDK {
     }
 
     /*
+     * Method to set an XID for a given entity.
+     * Returns undefined for API call failure or any other run-time error.
+     */
+    async setXID(agent, entity, xid) {
+        console.log('-- -------------------------------------------------');
+        console.log('-- Starting setXID()');
+        var retVal = undefined;
+        // Make the REST API call and wait for it to finish
+        try {
+            let params = { xid: xid };
+            let resp = await this.client.doPost('/entity/'+entity.guid+'/setXID', params);
+            console.log('-- POST call response: ', resp.status, resp.data);
+            if (resp.status != 200) throw(resp.data);
+            entity.xid = xid;
+            retVal = true;
+        } catch (err) {
+            console.log('-- Error: ', err);
+        }
+        console.log('-- Entity object to be returned: ', entity);
+        console.log('-- Finished setXID()');
+        console.log('-- -------------------------------------------------');
+        return retVal;
+    }
+
+    /*
      * Async method to fetch an entity from the Signet API Service.
      * Returns undefined for API call failure or any other run-time error.
      */

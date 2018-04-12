@@ -27,7 +27,6 @@ describe('Await Tests', function () {
   it('await test', async () => {
     this.timeout(3000);
     var retVal = await waitASecond();
-    console.log('Return Value: ' + retVal);
     assert.equal(retVal, 'Yay!');
   }); // End of 'it'
 });
