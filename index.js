@@ -7,6 +7,15 @@ class SignetAPIClient {
         this.signet_api_endpoint = signet_api_endpoint;
     }
 
+    // Make GET request to Signet API
+    doGet(url_path, params) {
+        let url = this.signet_api_endpoint + url_path;
+        console.log('Sending GET request to URL: ' + url);
+        console.log('Params:', params);
+        // Note: the following method call returns a promise
+        return axios.get(url, params);
+    }
+
     // Make POST request to Signet API
     doPost(url_path, params) {
         let url = this.signet_api_endpoint + url_path;
@@ -96,8 +105,6 @@ class SignetSDK {
      *   01) Generate Signet key set
      *   02) Create an entity on the Signet API
      *   03) Add entity key set to agent key chain
-     * For the synchronous-look-alike version, look at createEntity method
-     *   in the SignetAgent class.
      */
     async createEntity(agent, guid) {
         console.log('Starting createEntity()');
@@ -108,7 +115,8 @@ class SignetSDK {
         // Make the REST API call and wait for it to finish
         try {
             let resp = await this.client.doPost('/entity/', params);
-            console.log('Success: ' + resp.data);
+            console.log('Success:');
+            console.log(resp.data);
             agent.addEntityKeySetToKeyChain(guid, entityKeySet);
             let entity = new SignetEntity(guid, verkey);
             return entity;
@@ -116,6 +124,25 @@ class SignetSDK {
             console.log(err.toString());
         }
         console.log('Finished createEntity()');
+    }
+
+    /*
+     * Async method to fetch an entity from the Signet API Service
+     */
+    async fetchEntity(guid) {
+        console.log('Starting fetchEntity()');
+        let params = {};
+        // Make the REST API call and wait for it to finish
+        try {
+            let resp = await this.client.doGet('/entity/'+guid,params);
+            console.log('Success:');
+            console.log(resp.data);
+            let entity = new SignetEntity(resp.data.guid, resp.data.verkey);
+            return entity;
+        } catch (err) {
+            console.log(err.toString());
+        }
+        console.log('Finished fetchEntity()');
     }
 }
 

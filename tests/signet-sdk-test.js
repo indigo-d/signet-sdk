@@ -14,6 +14,7 @@ var sdk = require('../index.js');
 var agent = sdk.createAgent();
 var api_endpoint = 'http://localhost:1337';
 sdk.initialize(api_endpoint);
+var guid =  'guid-' + Math.random().toString(36).substr(2, 5);
 
 // Includes
 describe('Signet SDK Tests', function () {
@@ -36,11 +37,25 @@ describe('Signet SDK Tests', function () {
     });
     // Verify that the createEntity returns an Entity object
     it('createEntity should return entity object', async function () {
+        console.log('== -------------------------------------------------');
         this.timeout(15000); // Set timeout to 15 seconds!
-        let guid =  'guid-' + Math.random().toString(36).substr(2, 5);
         var entity = await sdk.createEntity(agent,guid);
-        console.log('Entity: ' + entity);
+        console.log('Entity:');
+        console.log(entity);
         assert.notEqual(entity, undefined, 'Entity is not defined');
         assert.equal(entity.constructor.name, 'SignetEntity');
+        console.log('== -------------------------------------------------');
+    });
+    // Verify that the fetchEntity returns an Entity object
+    it('fetchEntity should return entity object', async function () {
+        console.log('== -------------------------------------------------');
+        this.timeout(10000); // Set timeout to 10 seconds!
+        var entity = await sdk.fetchEntity(guid);
+        console.log('Entity:');
+        console.log(entity);
+        assert.notEqual(entity, undefined, 'Entity is not defined');
+        assert.equal(entity.constructor.name, 'SignetEntity');
+        assert.equal(entity.guid, guid, 'guid does not match');
+        console.log('== -------------------------------------------------');
     });
 });

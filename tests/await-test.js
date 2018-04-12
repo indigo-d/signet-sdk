@@ -26,11 +26,6 @@ function waitASecond() {
 describe('Await Tests', function () {
   it('await test', async () => {
     this.timeout(3000);
-    // Do it once!
-    var retVal = await waitASecond();
-    console.log('Return Value: ' + retVal);
-    assert.equal(retVal, 'Yay!');
-    // Do it twice just to be sure!!
     var retVal = await waitASecond();
     console.log('Return Value: ' + retVal);
     assert.equal(retVal, 'Yay!');
