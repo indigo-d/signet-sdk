@@ -9,12 +9,15 @@
  */
 
 // Includes
-var assert = require('assert');
+const assert = require('assert');
+const axios = require('axios');
 var sdk = require('../index.js');
 var agent = sdk.createAgent();
-var api_endpoint = 'http://localhost:1337';
+const api_endpoint = 'http://localhost:1337';
 sdk.initialize(api_endpoint);
-var guid =  'guid-' + Math.random().toString(36).substr(2, 5);
+const guid =  'guid-' + Math.random().toString(36).substr(2, 5);
+const sinon = require('sinon');
+var entity = undefined;
 
 // Includes
 describe('Signet SDK Tests', function () {
@@ -37,25 +40,47 @@ describe('Signet SDK Tests', function () {
     });
     // Verify that the createEntity returns an Entity object
     it('createEntity should return entity object', async function () {
-        console.log('== -------------------------------------------------');
+        console.log('== =================================================');
+        console.log('== createEntity test starting');
         this.timeout(15000); // Set timeout to 15 seconds!
-        var entity = await sdk.createEntity(agent,guid);
-        console.log('Entity:');
-        console.log(entity);
+        // Stub the axios post call!
+        const resolved = new Promise((r) => r({
+          status: 200, data: { guid: guid, verkey: 'verkey' }
+        }));
+        sinon.stub(axios, 'post').returns(resolved);
+        entity = await sdk.createEntity(agent,guid);
+        console.log('== Entity object returned by createEntity: ', entity);
         assert.notEqual(entity, undefined, 'Entity is not defined');
         assert.equal(entity.constructor.name, 'SignetEntity');
-        console.log('== -------------------------------------------------');
+        console.log('== createEntity test finished');
+        console.log('== =================================================');
     });
     // Verify that the fetchEntity returns an Entity object
     it('fetchEntity should return entity object', async function () {
-        console.log('== -------------------------------------------------');
-        this.timeout(10000); // Set timeout to 10 seconds!
-        var entity = await sdk.fetchEntity(guid);
-        console.log('Entity:');
-        console.log(entity);
+        console.log('== =================================================');
+        console.log('== fetchEntity test starting');
+        // Stub the axios post call!
+        const resolved = new Promise((r) => r({
+          status: 200, data: { guid: guid, verkey: 'verkey' }
+        }));
+        sinon.stub(axios, 'get').returns(resolved);
+        entity = await sdk.fetchEntity(guid);
+        console.log('== Entity object returned by fetchEntity: ', entity);
         assert.notEqual(entity, undefined, 'Entity is not defined');
         assert.equal(entity.constructor.name, 'SignetEntity');
         assert.equal(entity.guid, guid, 'guid does not match');
-        console.log('== -------------------------------------------------');
+        console.log('== fetchEntity test finished');
+        console.log('== =================================================');
+    });
+    // Verify that the getSigningKey returns the management key
+    it('getSigningKey should return management key', async function () {
+        console.log('== =================================================');
+        console.log('== getSigningKey test starting');
+        var key = agent.getSigningKey(guid);
+        console.log(key);
+        assert.notEqual(key, undefined, 'Signing key is not defined');
+        assert.equal(key.constructor.name, 'SignetKeyPair');
+        console.log('== getSigningKey test finished');
+        console.log('== =================================================');
     });
 });

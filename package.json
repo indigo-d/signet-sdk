@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/indigo-d/signet-sdk#readme",
   "devDependencies": {
-    "mocha": "^5.0.5"
+    "mocha": "^5.0.5",
+    "sinon": "^4.5.0"
   },
   "dependencies": {
     "async": "^2.6.0",
