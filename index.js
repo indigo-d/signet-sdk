@@ -158,10 +158,13 @@ class SignetSDK {
     async setXID(agent, entity, xid) {
         console.log('-- -------------------------------------------------');
         console.log('-- Starting setXID()');
+        console.log("--   entity guid = '" + entity.guid + "'");
+        console.log("--   new XID  = '" + xid + "'");
+        let params = { xid: xid };
+        console.log('-- Params: ', params);
         var retVal = undefined;
         // Make the REST API call and wait for it to finish
         try {
-            let params = { xid: xid };
             let resp = await this.client.doPost('/entity/'+entity.guid+'/setXID', params);
             console.log('-- POST call response: ', resp.status, resp.data);
             if (resp.status != 200) throw(resp.data);
@@ -209,11 +212,11 @@ class SignetSDK {
         console.log('-- -------------------------------------------------');
         console.log('-- Starting fetchEntityByXID()');
         console.log("--   xid = '" + xid + "'");
-        let params = { xid: xid };
+        let params = {};
         var entity = undefined;
         // Make the REST API call and wait for it to finish
         try {
-            let resp = await this.client.doGet('/entity/fetchEntityByXID/',params);
+            let resp = await this.client.doGet('/entity/fetchByXID/'+xid,params);
             console.log('-- GET call response: ', resp.status, resp.data);
             entity = new SignetEntity(resp.data.guid, resp.data.verkey);
             entity.xid = resp.data.xid;
