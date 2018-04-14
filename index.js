@@ -205,18 +205,32 @@ class SignetAgent {
     }
 }
 
+
+/**
+ * The main SDK class that implements the Signet SDK.
+ */
 class SignetSDK {
+    /**
+     * Constructor to create a SignetSDK object.
+     * @return {object} object of type SignetSDK
+     */
     constructor(signet_api_endpoint) {
         this.version = "0.0.1";
         this.client = undefined;
     }
 
-    // Create a client object for the Signet API
+    /**
+     * Set the Signet API endpoint for the SDK.
+     * @param {str} Endpoint for the Signet API
+     */
     initialize(signet_api_endpoint) {
         this.client = new SignetAPIClient(signet_api_endpoint);
     }
 
-    // Create Agent call (Note: this does not call the Signet API)
+    /**
+     * Create a a Signetgent object (Note: this does not call the Signet API)
+     * @return {SignetAgent} A SignetAgent object
+     */
     createAgent() {
         console.log('-- -------------------------------------------------');
         console.log('-- Starting createAgent()');
@@ -226,12 +240,17 @@ class SignetSDK {
         return agent;
     }
 
-    /*
+    /**
+     * <pre>
      * Async method to create an entity which involves the following:
      *   01) Generate Signet key set
      *   02) Create an entity on the Signet API
      *   03) Add entity key set to agent key chain
      * Returns undefined for API call failure or any other run-time error.
+     * </pre>
+     * @param {SignetAgent} agent Signet agent that would manage the entity
+     * @param {str} guid GUID for the entity
+     * @return {SignetEntity} A SignetEntity object or undefined
      */
     async createEntity(agent, guid) {
         console.log('-- -------------------------------------------------');
@@ -257,9 +276,13 @@ class SignetSDK {
         return entity;
     }
 
-    /*
+    /**
      * Method to set an XID for a given entity.
      * Returns undefined for API call failure or any other run-time error.
+     * @param {SignetAgent} agent Signet agent that manages the entity
+     * @param {SignetEntity} entity Signet entity to set the XID for
+     * @param {str} xid New XID to set
+     * @return {expression} An expression that is either true or undefined
      */
     async setXID(agent, entity, xid) {
         console.log('-- -------------------------------------------------');
@@ -285,9 +308,11 @@ class SignetSDK {
         return retVal;
     }
 
-    /*
-     * Async method to fetch an entity from the Signet API Service.
+    /**
+     * Async method to fetch an entity by GUID from the Signet API Service.
      * Returns undefined for API call failure or any other run-time error.
+     * @param {str} guid GUID of the Signet entity to fetch
+     * @return {SignetEntity} A SignetEntity object or undefined
      */
     async fetchEntity(guid) {
         console.log('-- -------------------------------------------------');
@@ -310,9 +335,11 @@ class SignetSDK {
         return entity;
     }
 
-    /*
-     * Async method to fetch an entity from the Signet API Service by XID.
+    /**
+     * Async method to fetch an entity by XID from the Signet API Service.
      * Returns undefined for API call failure or any other run-time error.
+     * @param {str} xid XID of the Signet entity to fetch
+     * @return {SignetEntity} A SignetEntity object or undefined
      */
     async fetchEntityByXID(xid) {
         console.log('-- -------------------------------------------------');
