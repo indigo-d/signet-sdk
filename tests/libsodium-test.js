@@ -1,7 +1,6 @@
 /*
  * Description:
  *   This test suite will test the libsodium JS library and base64 encoding.
- * Last Modified: 2018-04-07
  * Author: Vivek Aanand Ganesan (onevivek@yahoo.com)
  */
 
