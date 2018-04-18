@@ -22,3 +22,10 @@ Developer notes for contributing to this Node JS library.
 Once Node JS is installed, do the following:
 
   - Run: ``` npm test ```
+
+## JSDOC Documentation
+
+  - Follow the JSDOC convention and add comments in code.
+  - When ready to check in, run ``` make doc ```.
+  - This will generate the documentation.  Look at doc/index.html to see how it would look.
+  - Commit your docs along with your code changes.
