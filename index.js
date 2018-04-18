@@ -5,8 +5,8 @@
  *   var sdk = require('signet-sdk');
  *   sdk.connect('http://localhost:1337'); // Set the Signet API endpoint
  *   var agent = sdk.createAgent(); // Create a new agent (local object)
- *   var entity = sdk.createEntity(agent,'guid1'); // Create a new entity
- *   sdk.setXID(agent,entity,'XID1'); // Set the XID of the entity
+ *   var entity = agent.createEntity('guid1'); // Create a new entity
+ *   agent.setXID(entity,'XID1'); // Set the XID of the entity
  *   var eByGUID = sdk.fetchEntity('guid1'); // Fetched entity object
  *   var eByXID = sdk.fetchEntityByXID('XID1'); // Fetched entity object
  * </pre>
@@ -16,6 +16,7 @@ const async  = require('async');
 const axios  = require('axios');
 const sodium = require('libsodium-wrappers');
 const base64url = require('base64url');
+var sdk;
 
 
 /**
@@ -106,7 +107,6 @@ class SignetKeyPair {
 }
 
 
-// Note: Add <pre> ... </pre> tags for proper formatting with jsdoc!
 /**
  * A container class for key pairs.
  * <pre>
@@ -126,45 +126,19 @@ class SignetKeySet {
    * @return {object} object of type SignetKeySet
    */
   constructor() {
-    this.managementKey = new SignetKeyPair();
-    this.encryptionKey = new SignetKeyPair();
+    this.ownershipKeyPair = new SignetKeyPair();
   }
 
   /**
-   * Get the public keys of the management and encryption key pairs.
+   * Get the public key of the ownership key pair.
    * @return {Array} Array with two SignetKey values
    */
-  getPublicKeys() {
-    return [this.managementKey.getPublicKey(), this.encryptionKey.getPublicKey()];
+  getOwnershipKeypairPublicKey() {
+    return this.ownershipKeyPair.getPublicKey();
   }
 }
 
 
-// Note: Add <pre> ... </pre> tags for proper formatting with jsdoc!
-/**
- * A proxy class for a Signet Entity.
- * <pre>
- * Objects of this class would contain entity attributes such as:
- *   - guid    => GUID of the Signet Entity
- *   - xid     => XID of the Signet Entity
- *   - verkey  => Verification key (Management key) of the Signet Entity
- *
- * Certain method calls to this object may trigger a call to the Signet API.
- * In such cases, these method calls would update the local state.
- * </pre>
- */
-class SignetEntity {
-  /**
-   * Constructor to create a SignetEntity object.
-   * @return {object} object of type SignetKeyEntity
-   */
-  constructor(guid, verkey) {
-    this.guid = guid;
-    this.verkey = verkey;
-  }
-}
-
-// Note: Add <pre> ... </pre> tags for proper formatting with jsdoc!
 /**
  * A proxy class for a Signet Agent.
  * <pre>
@@ -187,24 +161,115 @@ class SignetAgent {
 
   /**
    * Adds the key set object of the given entity to the agent's key chain.
-   * @return {SignetKeySet} The management key of the key set
+   * @return {None} None
    */
-  addEntityKeySetToKeyChain(guid, keySet) {
-    this.keyChain[guid] = keySet;
-    return keySet.managementKey;
+  addEntityKeySetToKeyChain(guid, entityKeySet) {
+    this.keyChain[guid] = entityKeySet;
   }
 
   /**
-   * Gets the signing key (management key) of the key set object
-   * @return {SignetKeySet} The management key of the key set or undefined if not found
+   * Gets the ownership key pair of the entity with the given GUID.
+   * @return {SignetKeyPair} The ownership key pair of the key set or undefined if not found
    */
-  getSigningKey(guid) {
+  getOwnershipKeyPair(guid) {
     if ( !(guid in this.keyChain) ) {
       return undefined;
     } else {
       let keySet = this.keyChain[guid];
-      return keySet.managementKey;
+      return keySet.ownershipKeyPair;
     }
+  }
+
+  /**
+   * <pre>
+   * Async method to create an entity which involves the following:
+   *   01) Generate Signet key set
+   *   02) Create an entity on the Signet API
+   *   03) Add entity key set to agent key chain
+   * Returns undefined for API call failure or any other run-time error.
+   * </pre>
+   * @param {str} guid GUID for the entity
+   * @return {SignetEntity} A SignetEntity object or undefined
+   */
+  async createEntity(guid) {
+    console.log('-- -------------------------------------------------');
+    console.log('-- Starting createEntity()');
+    var entity = undefined;
+    // Make the REST API call and wait for it to finish
+    try {
+      if ( (guid in this.keyChain) ) {
+        throw('Entity already exists and is owned by agent');
+      }
+      let entityKeySet = new SignetKeySet();
+      let verkey = entityKeySet.getOwnershipKeypairPublicKey();
+      let params = { guid: guid, verkey: verkey };
+      let resp = await sdk.client.doPost('/entity/', params);
+      console.log('-- POST call response: ', resp.status, resp.data);
+      this.addEntityKeySetToKeyChain(guid, entityKeySet);
+      console.log('-- Added entity to key chain');
+      entity = new SignetEntity(guid, verkey);
+    } catch (err) {
+      console.log('-- Error: ', err.toString());
+    }
+    console.log('-- Entity object to be returned: ', entity);
+    console.log('-- Finished createEntity()');
+    console.log('-- -------------------------------------------------');
+    return entity;
+  }
+
+  /**
+   * Method to set an XID for an entity both locally and on the Signet API server.
+   * Returns undefined for API call failure or any other run-time error.
+   * @param {SignetEntity} entity Signet entity to set the XID for
+   * @param {str} xid New XID to set
+   * @return {expression} An expression that is either true or undefined
+   */
+  async setXID(entity, xid) {
+    console.log('-- -------------------------------------------------');
+    console.log('-- Starting setXID()');
+    console.log("--   entity guid = '" + entity.guid + "'");
+    console.log("--   new XID  = '" + xid + "'");
+    let params = { xid: xid };
+    console.log('-- Params: ', params);
+    var retVal = undefined;
+    // Make the REST API call and wait for it to finish
+    try {
+      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/setXID', params);
+      console.log('-- POST call response: ', resp.status, resp.data);
+      if (resp.status != 200) throw(resp.data);
+      entity.xid = xid;
+      retVal = true;
+    } catch (err) {
+      console.log('-- Error: ', err);
+    }
+    console.log('-- Entity object to be returned: ', entity);
+    console.log('-- Finished setXID()');
+    console.log('-- -------------------------------------------------');
+    return retVal;
+  }
+}
+
+
+/**
+ * A proxy class for a Signet Entity.
+ * <pre>
+ * Objects of this class would contain entity attributes such as:
+ *   - guid    => GUID of the Signet Entity
+ *   - xid     => XID of the Signet Entity
+ *   - verkey  => Verification key (Management key) of the Signet Entity
+ *
+ * Certain method calls to this object may trigger a call to the Signet API.
+ * In such cases, these method calls would update the local state.
+ * </pre>
+ */
+class SignetEntity {
+  /**
+   * Constructor to create a SignetEntity object.
+   * @return {object} object of type SignetKeyEntity
+   */
+  constructor(guid, verkey) {
+    this.guid = guid;
+    this.verkey = verkey;
   }
 }
 
@@ -252,74 +317,6 @@ class SignetSDK {
     console.log('-- Finished createAgent()');
     console.log('-- -------------------------------------------------');
     return agent;
-  }
-
-  /**
-   * <pre>
-   * Async method to create an entity which involves the following:
-   *   01) Generate Signet key set
-   *   02) Create an entity on the Signet API
-   *   03) Add entity key set to agent key chain
-   * Returns undefined for API call failure or any other run-time error.
-   * </pre>
-   * @param {SignetAgent} agent Signet agent that would manage the entity
-   * @param {str} guid GUID for the entity
-   * @return {SignetEntity} A SignetEntity object or undefined
-   */
-  async createEntity(agent, guid) {
-    console.log('-- -------------------------------------------------');
-    console.log('-- Starting createEntity()');
-    var entity = undefined;
-    // Make the REST API call and wait for it to finish
-    try {
-      let entityKeySet = new SignetKeySet();
-      let publicKeys = entityKeySet.getPublicKeys();
-      let verkey = publicKeys[0].substring(0,250);
-      let params = { guid: guid, verkey: verkey };
-      let resp = await this.client.doPost('/entity/', params);
-      console.log('-- POST call response: ', resp.status, resp.data);
-      agent.addEntityKeySetToKeyChain(guid, entityKeySet);
-      console.log('-- Added entity to agent key chain');
-      entity = new SignetEntity(guid, verkey);
-    } catch (err) {
-      console.log('-- Error: ', err.toString());
-    }
-    console.log('-- Entity object to be returned: ', entity);
-    console.log('-- Finished createEntity()');
-    console.log('-- -------------------------------------------------');
-    return entity;
-  }
-
-  /**
-   * Method to set an XID for a given entity.
-   * Returns undefined for API call failure or any other run-time error.
-   * @param {SignetAgent} agent Signet agent that manages the entity
-   * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} xid New XID to set
-   * @return {expression} An expression that is either true or undefined
-   */
-  async setXID(agent, entity, xid) {
-    console.log('-- -------------------------------------------------');
-    console.log('-- Starting setXID()');
-    console.log("--   entity guid = '" + entity.guid + "'");
-    console.log("--   new XID  = '" + xid + "'");
-    let params = { xid: xid };
-    console.log('-- Params: ', params);
-    var retVal = undefined;
-    // Make the REST API call and wait for it to finish
-    try {
-      let resp = await this.client.doPost('/entity/'+entity.guid+'/setXID', params);
-      console.log('-- POST call response: ', resp.status, resp.data);
-      if (resp.status != 200) throw(resp.data);
-      entity.xid = xid;
-      retVal = true;
-    } catch (err) {
-      console.log('-- Error: ', err);
-    }
-    console.log('-- Entity object to be returned: ', entity);
-    console.log('-- Finished setXID()');
-    console.log('-- -------------------------------------------------');
-    return retVal;
   }
 
   /**
@@ -378,4 +375,5 @@ class SignetSDK {
 }
 
 
-module.exports = new SignetSDK();
+sdk = new SignetSDK();
+module.exports = sdk;

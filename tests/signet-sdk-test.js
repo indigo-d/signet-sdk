@@ -25,46 +25,56 @@ describe('Signet SDK Tests', function () {
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
-  // Verify that the object is of the right class
-  it('has correct class name', function () {
+  // SDK initialization tests
+  it('SDK initialization tests', async function () {
+    console.log('== =================================================');
+    console.log('== SDK initialization tests starting');
     assert.equal(sdk.constructor.name, 'SignetSDK');
-  });
-  // Verify that the object has the right version
-  it('has correct version after instantiation', function () {
     assert.equal(sdk.version, '0.0.1');
-  });
-  // Verify that the initialize call sets the correct value
-  it('has correct signet api endpoint after intialize', async function () {
     await sdk.initialize(api_endpoint);
     assert.equal(sdk.client.constructor.name, 'SignetAPIClient');
     assert.equal(sdk.client.signet_api_endpoint, api_endpoint);
+    console.log('== SDK initialization tests finished');
+    console.log('== =================================================');
   });
-  // Verify that the createAgent returns an Agent object
-  it('createAgent should return agent object', async function () {
+  // SDK Agent tests
+  it('SDK createAgent and other agent tests', async function () {
+    console.log('== =================================================');
+    console.log('== SDK createAgent and other agent tests starting');
     agent = await sdk.createAgent();
     assert.equal(agent.constructor.name, 'SignetAgent');
-  });
-  // Verify that the createEntity returns an Entity object
-  it('createEntity should return entity object', async function () {
-    console.log('== =================================================');
-    console.log('== createEntity test starting');
-    this.timeout(15000); // Set timeout to 15 seconds!
-    // Stub the axios post call!
-    const resolved = new Promise((r) => r({
+    // Stub the axios post call for the createEntity call
+    var r1 = new Promise((r) => r({
       status: 200, data: { guid: guid, verkey: 'verkey' }
     }));
-    sandbox.stub(axios, 'post').returns(resolved);
-    entity = await sdk.createEntity(agent,guid);
+    var stub = sandbox.stub(axios, 'post');
+    stub.returns(r1);
+    entity = await agent.createEntity(guid);
     console.log('== Entity object returned by createEntity: ', entity);
     assert.notEqual(entity, undefined, 'Entity is not defined');
     assert.equal(entity.constructor.name, 'SignetEntity');
-    console.log('== createEntity test finished');
+    let key = agent.getOwnershipKeyPair(guid);
+    assert.notEqual(key, undefined, 'Ownership key is not defined');
+    assert.equal(key.constructor.name, 'SignetKeyPair');
+    sandbox.restore();
+    // Stub the axios post call for setXID call
+    sandbox = sinon.sandbox.create();
+    var r2 = new Promise((r) => r({
+      status: 200, data: { guid: guid, xid: xid+'-mod' }
+    }));
+    sandbox.stub(axios, 'post').returns(r2);
+    let retVal = await agent.setXID(entity, xid+'-mod');
+    console.log('== Return value of setXID: ', retVal);
+    assert(retVal, 'setXID did not return true');
+    assert.equal(entity.guid, guid);
+    assert.equal(entity.xid, xid+'-mod');
+    console.log('== SDK createAgent and other agent tests finished');
     console.log('== =================================================');
   });
-  // Verify that the fetchEntity returns an Entity object
-  it('fetchEntity should return entity object', async function () {
+  // SDK fetchEntity test
+  it('SDK fetchEntity test', async function () {
     console.log('== =================================================');
-    console.log('== fetchEntity test starting');
+    console.log('== SDK fetchEntity test starting');
     // Stub the axios post call!
     const resolved = new Promise((r) => r({
       status: 200, data: { guid: guid, xid: xid, verkey: 'verkey' }
@@ -77,30 +87,13 @@ describe('Signet SDK Tests', function () {
     assert.equal(entity.guid, guid, 'guid does not match');
     assert.equal(entity.xid, xid, 'xid does not match');
     assert.equal(entity.verkey, 'verkey', 'verkey does not match');
-    console.log('== fetchEntity test finished');
+    console.log('== SDK fetchEntity test finished');
     console.log('== =================================================');
   });
-  // Verify that the setXID returns true
-  it('setXID should return true and update XID', async function () {
+  // SDK fetchEntityByXID test
+  it('SDK fetchEntityByXID should return entity object', async function () {
     console.log('== =================================================');
-    console.log('== setXID test starting');
-    // Stub the axios post call!
-    const resolved = new Promise((r) => r({
-      status: 200, data: { guid: guid, xid: xid+'-mod' }
-    }));
-    sandbox.stub(axios, 'post').returns(resolved);
-    let retVal = await sdk.setXID(agent, entity, xid+'-mod');
-    console.log('== Return value of setXID: ', retVal);
-    assert(retVal, 'setXID did not return true');
-    assert.equal(entity.guid, guid);
-    assert.equal(entity.xid, xid+'-mod');
-    console.log('== setXID test finished');
-    console.log('== =================================================');
-  });
-  // Verify that the fetchEntityByXID returns an Entity object
-  it('fetchEntityByXID should return entity object', async function () {
-    console.log('== =================================================');
-    console.log('== fetchEntityByXID test starting');
+    console.log('== SDK fetchEntityByXID test starting');
     // Stub the axios post call!
     const resolved = new Promise((r) => r({
         status: 200, data: { guid: guid, xid: xid, verkey: 'verkey' }
@@ -113,18 +106,7 @@ describe('Signet SDK Tests', function () {
     assert.equal(entity.guid, guid, 'guid does not match');
     assert.equal(entity.xid, xid, 'xid does not match');
     assert.equal(entity.verkey, 'verkey', 'verkey does not match');
-    console.log('== fetchEntityByXID test finished');
-    console.log('== =================================================');
-  });
-  // Verify that the getSigningKey returns the management key
-  it('getSigningKey should return management key', async function () {
-    console.log('== =================================================');
-    console.log('== getSigningKey test starting');
-    let key = agent.getSigningKey(guid);
-    console.log(key);
-    assert.notEqual(key, undefined, 'Signing key is not defined');
-    assert.equal(key.constructor.name, 'SignetKeyPair');
-    console.log('== getSigningKey test finished');
+    console.log('== SDK fetchEntityByXID test finished');
     console.log('== =================================================');
   });
 });
