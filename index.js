@@ -5,7 +5,7 @@
  *   var sdk = require('signet-sdk');
  *   sdk.connect('http://localhost:1337'); // Set the Signet API endpoint
  *   var agent = sdk.createAgent(); // Create a new agent (local object)
- *   var entity = agent.createEntity('guid1'); // Create a new entity
+ *   var entity = agent.createEntity('12345678-aaaa-bbbb-cccc-1234567890ab'); // GUID must be of UUID4 format
  *   agent.setXID(entity,'XID1'); // Set the XID of the entity
  *   var eByGUID = sdk.fetchEntity('guid1'); // Fetched entity object
  *   var eByXID = sdk.fetchEntityByXID('XID1'); // Fetched entity object
