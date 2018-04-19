@@ -11,10 +11,12 @@
 const assert = require('assert');
 const axios = require('axios');
 const sinon = require('sinon');
+const uuid4 = require('uuid4');
 const sdk = require('../index.js');
 const api_endpoint = 'http://localhost:1337';
-const guid =  'guid-' + Math.random().toString(36).substr(2, 5);
-const xid =  'xid-' + Math.random().toString(36).substr(2, 5);
+var guid =  uuid4.valid();
+var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
+var keypair = undefined;
 var agent = undefined;
 var entity = undefined;
 
@@ -34,6 +36,7 @@ describe('Signet SDK Tests', function () {
     await sdk.initialize(api_endpoint);
     assert.equal(sdk.client.constructor.name, 'SignetAPIClient');
     assert.equal(sdk.client.signet_api_endpoint, api_endpoint);
+    guid = await sdk.genGUID();
     console.log('== SDK initialization tests finished');
     console.log('== =================================================');
   });
@@ -45,7 +48,7 @@ describe('Signet SDK Tests', function () {
     assert.equal(agent.constructor.name, 'SignetAgent');
     // Stub the axios post call for the createEntity call
     var r1 = new Promise((r) => r({
-      status: 200, data: { guid: guid, verkey: 'verkey' }
+      status: 200, data: {}
     }));
     var stub = sandbox.stub(axios, 'post');
     stub.returns(r1);

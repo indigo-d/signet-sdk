@@ -16,6 +16,7 @@ const async  = require('async');
 const axios  = require('axios');
 const sodium = require('libsodium-wrappers');
 const base64url = require('base64url');
+const uuid4 = require('uuid4');
 var sdk;
 
 
@@ -157,6 +158,8 @@ class SignetAgent {
   constructor() {
     // Empty hash containing the entity keys managed by this agent
     this.keyChain = {};
+    // Empty hash containing the signature history of managed entities
+    this.signatureHistory = {};
   }
 
   /**
@@ -181,6 +184,36 @@ class SignetAgent {
   }
 
   /**
+   * Method to generate a signature and a canonical JSON representation
+   *   of an entity managed by this agent.
+   * @param {SignetEntity} entity SignetEntity object
+   * @return {string} A signed canonical JSON representation of the entity
+   */
+  getSignedPayload(guid,signetKeyPair,prevSign,xids) {
+    console.log('-- Starting getSignedPayload');
+    console.log('-- signetKeyPair: ', signetKeyPair);
+    let entityRep = {
+      entity_data: {guid: guid},
+      entity_verify: {
+        verify_key: signetKeyPair.getPublicKey(),
+        sign_time: (new Date()).toISOString(),
+        prev_sign: prevSign
+      }
+    };
+    if (xids.length > 0) { entityRep['entity_data']['xids'] = xids; }
+    // Get a JSON representation of the object and sign it
+    let plainTxt = JSON.stringify(entityRep);
+    let sigArray = sodium.crypto_sign_detached(plainTxt, signetKeyPair.keypair.privateKey);
+    // Get a base64url encoded version of it with a '=' appended
+    let signature = base64url(sigArray) + '=';
+    console.log('-- Signature: ', signature);
+    entityRep['sign'] = signature;
+    console.log('-- entityRep: ', entityRep);
+    console.log('-- Finished getSignedPayload');
+    return entityRep;
+  }
+
+  /**
    * <pre>
    * Async method to create an entity which involves the following:
    *   01) Generate Signet key set
@@ -188,26 +221,25 @@ class SignetAgent {
    *   03) Add entity key set to agent key chain
    * Returns undefined for API call failure or any other run-time error.
    * </pre>
-   * @param {str} guid GUID for the entity
    * @return {SignetEntity} A SignetEntity object or undefined
    */
   async createEntity(guid) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting createEntity()');
+    console.log('--   guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      if ( (guid in this.keyChain) ) {
-        throw('Entity already exists and is owned by agent');
-      }
       let entityKeySet = new SignetKeySet();
-      let verkey = entityKeySet.getOwnershipKeypairPublicKey();
-      let params = { guid: guid, verkey: verkey };
+      let verkey = entityKeySet.ownershipKeyPair;
+      let entityRep = this.getSignedPayload(guid,verkey,'',[]);
+      let entityJSON = JSON.stringify(entityRep);
+      let params = { entity_json: entityJSON };
       let resp = await sdk.client.doPost('/entity/', params);
       console.log('-- POST call response: ', resp.status, resp.data);
       this.addEntityKeySetToKeyChain(guid, entityKeySet);
       console.log('-- Added entity to key chain');
-      entity = new SignetEntity(guid, verkey);
+      entity = new SignetEntity(guid, verkey.getPublicKey());
     } catch (err) {
       console.log('-- Error: ', err.toString());
     }
@@ -265,11 +297,12 @@ class SignetAgent {
 class SignetEntity {
   /**
    * Constructor to create a SignetEntity object.
-   * @return {object} object of type SignetKeyEntity
+   * @return {object} object of type SignetEntity
    */
   constructor(guid, verkey) {
     this.guid = guid;
     this.verkey = verkey;
+    this.xid = undefined;
   }
 }
 
@@ -298,6 +331,14 @@ class SignetSDK {
       // Initialize Sodium; Sodium methods won't work without this step!
       await sodium.ready;
     }
+  }
+
+  /**
+   * Async method to generate a GUID that is a UUID4 format UUID.
+   * @return {string} UUID4 UUID
+   */
+  async genGUID() {
+    return uuid4.valid();
   }
 
   /**

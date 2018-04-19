@@ -49,10 +49,10 @@ describe('Libsodium Tests', function () {
     };
     let plainTxt = JSON.stringify(plainObj);
     let sigArray = sodium.crypto_sign_detached(plainTxt, keypair.privateKey);
-    // This should work without throwing an error and retur true
+    // This should work without throwing an error and return true
     var ver1 = sodium.crypto_sign_verify_detached(sigArray, plainTxt, keypair.publicKey);
     assert.equal(ver1, true);
-    // This should work without throwing an error and retur false
+    // This should work without throwing an error and return false
     sigArray[0] = 1;
     var ver2 = sodium.crypto_sign_verify_detached(sigArray, plainTxt, keypair.publicKey);
     assert.equal(ver2, false);
