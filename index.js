@@ -189,7 +189,7 @@ class SignetAgent {
    * @param {SignetEntity} entity SignetEntity object
    * @return {string} A signed canonical JSON representation of the entity
    */
-  getSignedPayload(guid,signetKeyPair,prevSign,xids) {
+  getSignedPayload(guid,signetKeyPair,prevSign,xids,channels) {
     console.log('-- Starting getSignedPayload');
     console.log('-- signetKeyPair: ', signetKeyPair);
     let entityRep = {
@@ -200,7 +200,12 @@ class SignetAgent {
         prev_sign: prevSign
       }
     };
-    if (xids.length > 0) { entityRep['entity_data']['xids'] = xids; }
+    if (xids != undefined) {
+      if (xids.length > 0) { entityRep['entity_data']['xids'] = xids; }
+    }
+    if (channels != undefined) {
+      if (channels.length > 0) { entityRep['entity_data']['channels'] = channels; }
+    }
     // Get a JSON representation of the object and sign it
     let plainTxt = JSON.stringify(entityRep);
     let sigArray = sodium.crypto_sign_detached(plainTxt, signetKeyPair.keypair.privateKey);
@@ -232,7 +237,7 @@ class SignetAgent {
     try {
       let entityKeySet = new SignetKeySet();
       let verkey = entityKeySet.ownershipKeyPair;
-      let entityRep = this.getSignedPayload(guid,verkey,'',[]);
+      let entityRep = this.getSignedPayload(guid,verkey,'',[],[]);
       let entityJSON = JSON.stringify(entityRep);
       let params = { entity_json: entityJSON };
       let resp = await sdk.client.doPost('/entity/', params);

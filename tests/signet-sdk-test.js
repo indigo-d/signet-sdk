@@ -55,7 +55,9 @@ describe('Signet SDK Tests', function () {
     // ***************************************************************
     console.log('== Testing signature:');
     let keySet = new keyset();
-    let entityRep = agent.getSignedPayload(guid, keySet.ownershipKeyPair, '', []);
+    // The last two empty arrays refer to XIDs and Channels
+    // These are empty for a createEntity call and hence they are empty in this call
+    let entityRep = agent.getSignedPayload(guid, keySet.ownershipKeyPair, '', [], []);
     console.log('== entityRep returned by getSignedPayLoad: ', entityRep);
     assert.equal(
       entityRep['entity_data']['guid'],
