@@ -12,7 +12,11 @@ const assert = require('assert');
 const axios = require('axios');
 const sinon = require('sinon');
 const uuid4 = require('uuid4');
-const sdk = require('../index.js');
+const base64url = require('base64url');
+const sodium = require('libsodium-wrappers');
+const rewire = require('rewire');
+const sdk = rewire('../index.js');
+const keyset = sdk.__get__('SignetKeySet');
 const api_endpoint = 'http://localhost:1337';
 var guid =  uuid4.valid();
 var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
@@ -46,6 +50,56 @@ describe('Signet SDK Tests', function () {
     console.log('== SDK createAgent and other agent tests starting');
     agent = await sdk.createAgent();
     assert.equal(agent.constructor.name, 'SignetAgent');
+    // ***************************************************************
+    // Check the signature and verification of entity object
+    // ***************************************************************
+    console.log('== Testing signature:');
+    let keySet = new keyset();
+    let entityRep = agent.getSignedPayload(guid, keySet.ownershipKeyPair, '', []);
+    console.log('== entityRep returned by getSignedPayLoad: ', entityRep);
+    assert.equal(
+      entityRep['entity_data']['guid'],
+      guid,
+      'GUID is not correct in the entity representation'
+    );
+    assert.equal(
+      entityRep['entity_verify']['verify_key'],
+      keySet.ownershipKeyPair.getPublicKey(),
+      'verify_key is not correct in the entity representation'
+    );
+    assert.equal(
+      entityRep['entity_verify']['prev_sign'],
+      '',
+      'prev_sign is not correct in the entity representation'
+    );
+    await sodium.ready;
+    let sign = entityRep['sign'];
+    console.log('-- Entity sign: ', sign);
+    // Remove the trailing '=' character
+    let signature = sign.slice(0, -1);
+    console.log('-- Entity signature: ', signature);
+    let sigArray = new Uint8Array(base64url.toBuffer(signature));
+    console.log(sigArray);
+    // Remove the trailing '=' character
+    let verkey = entityRep['entity_verify']['verify_key'].slice(0, -1);
+    console.log('-- Verify Key: ', verkey);
+    let pubKeyArray = base64url.toBuffer(verkey);
+    console.log('-- Public Key Array: ', pubKeyArray);
+    let intArray = new Uint8Array(pubKeyArray);
+    console.log('-- Public Key Int Array: ', intArray);
+    console.log(keySet.ownershipKeyPair.keypair.publicKey);
+    assert.deepEqual(keySet.ownershipKeyPair.keypair.publicKey, intArray, 'Invalid public key');
+    // Delete the sign field and get a JSON string of the entity representation
+    delete entityRep['sign'];
+    let plainTxt = JSON.stringify(entityRep);
+    console.log('-- plainTxt: ', plainTxt);
+    // This should work without throwing an error and return true
+    let ver = sodium.crypto_sign_verify_detached(sigArray, plainTxt, intArray);
+    assert.equal(ver, true);
+    // ***************************************************************
+    // Test the agent createEntity method
+    // ***************************************************************
+    console.log('== Testing createEntity:');
     // Stub the axios post call for the createEntity call
     var r1 = new Promise((r) => r({
       status: 200, data: {}
@@ -60,6 +114,10 @@ describe('Signet SDK Tests', function () {
     assert.notEqual(key, undefined, 'Ownership key is not defined');
     assert.equal(key.constructor.name, 'SignetKeyPair');
     sandbox.restore();
+    // ***************************************************************
+    // Test the agent setXID method
+    // ***************************************************************
+    console.log('== Testing setXID:');
     // Stub the axios post call for setXID call
     sandbox = sinon.sandbox.create();
     var r2 = new Promise((r) => r({
