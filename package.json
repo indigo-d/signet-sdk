@@ -33,6 +33,8 @@
     "keypair": "^1.0.1",
     "libsodium": "^0.7.3",
     "libsodium-wrappers": "^0.7.3",
-    "request": "^2.85.0"
+    "request": "^2.85.0",
+    "rewire": "^4.0.0",
+    "uuid4": "^1.0.0"
   }
 }

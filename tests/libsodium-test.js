@@ -24,7 +24,7 @@ describe('Libsodium Tests', function () {
     assert.equal(priKeyBase64.length,86)
   });
 
-  it('Signature test for strings', async () => {
+  it('Signature test for string', async () => {
     let plainTxt = 'abcdefghijklmnopqrstuvwxyz';
     let signedMsg = sodium.crypto_sign(plainTxt, keypair.privateKey);
     // This should work without throwing an error
@@ -40,7 +40,7 @@ describe('Libsodium Tests', function () {
     }
   });
 
-  it('Detached signature test for json objects', async () => {
+  it('Detached signature test for json object', async () => {
     let plainObj = {
       firstName: 'Foo',
       lastName: 'Bar',

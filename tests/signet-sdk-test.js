@@ -12,7 +12,11 @@ const assert = require('assert');
 const axios = require('axios');
 const sinon = require('sinon');
 const uuid4 = require('uuid4');
-const sdk = require('../index.js');
+const base64url = require('base64url');
+const sodium = require('libsodium-wrappers');
+const rewire = require('rewire');
+const sdk = rewire('../index.js');
+const keyset = sdk.__get__('SignetKeySet');
 const api_endpoint = 'http://localhost:1337';
 var guid =  uuid4.valid();
 var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
@@ -41,75 +45,58 @@ describe('Signet SDK Tests', function () {
     console.log('== =================================================');
   });
   // SDK Agent tests
-  it('SDK createAgent and other agent tests', async function () {
+  it('SDK agent tests', async function () {
     console.log('== =================================================');
-    console.log('== SDK createAgent and other agent tests starting');
+    console.log('== SDK agent tests starting');
     agent = await sdk.createAgent();
     assert.equal(agent.constructor.name, 'SignetAgent');
-    // Stub the axios post call for the createEntity call
-    var r1 = new Promise((r) => r({
-      status: 200, data: {}
-    }));
-    var stub = sandbox.stub(axios, 'post');
-    stub.returns(r1);
-    entity = await agent.createEntity(guid);
-    console.log('== Entity object returned by createEntity: ', entity);
-    assert.notEqual(entity, undefined, 'Entity is not defined');
-    assert.equal(entity.constructor.name, 'SignetEntity');
-    let key = agent.getOwnershipKeyPair(guid);
-    assert.notEqual(key, undefined, 'Ownership key is not defined');
-    assert.equal(key.constructor.name, 'SignetKeyPair');
-    sandbox.restore();
-    // Stub the axios post call for setXID call
-    sandbox = sinon.sandbox.create();
-    var r2 = new Promise((r) => r({
-      status: 200, data: { guid: guid, xid: xid+'-mod' }
-    }));
-    sandbox.stub(axios, 'post').returns(r2);
-    let retVal = await agent.setXID(entity, xid+'-mod');
-    console.log('== Return value of setXID: ', retVal);
-    assert(retVal, 'setXID did not return true');
-    assert.equal(entity.guid, guid);
-    assert.equal(entity.xid, xid+'-mod');
-    console.log('== SDK createAgent and other agent tests finished');
-    console.log('== =================================================');
-  });
-  // SDK fetchEntity test
-  it('SDK fetchEntity test', async function () {
-    console.log('== =================================================');
-    console.log('== SDK fetchEntity test starting');
-    // Stub the axios post call!
-    const resolved = new Promise((r) => r({
-      status: 200, data: { guid: guid, xid: xid, verkey: 'verkey' }
-    }));
-    sandbox.stub(axios, 'get').returns(resolved);
-    entity = await sdk.fetchEntity(guid);
-    console.log('== Entity object returned by fetchEntity: ', entity);
-    assert.notEqual(entity, undefined, 'Entity is not defined');
-    assert.equal(entity.constructor.name, 'SignetEntity');
-    assert.equal(entity.guid, guid, 'guid does not match');
-    assert.equal(entity.xid, xid, 'xid does not match');
-    assert.equal(entity.verkey, 'verkey', 'verkey does not match');
-    console.log('== SDK fetchEntity test finished');
-    console.log('== =================================================');
-  });
-  // SDK fetchEntityByXID test
-  it('SDK fetchEntityByXID should return entity object', async function () {
-    console.log('== =================================================');
-    console.log('== SDK fetchEntityByXID test starting');
-    // Stub the axios post call!
-    const resolved = new Promise((r) => r({
-        status: 200, data: { guid: guid, xid: xid, verkey: 'verkey' }
-    }));
-    sandbox.stub(axios, 'get').returns(resolved);
-    entity = await sdk.fetchEntityByXID(xid);
-    console.log('== Entity object returned by fetchEntity: ', entity);
-    assert.notEqual(entity, undefined, 'Entity is not defined');
-    assert.equal(entity.constructor.name, 'SignetEntity');
-    assert.equal(entity.guid, guid, 'guid does not match');
-    assert.equal(entity.xid, xid, 'xid does not match');
-    assert.equal(entity.verkey, 'verkey', 'verkey does not match');
-    console.log('== SDK fetchEntityByXID test finished');
+    // ***************************************************************
+    // Check the signature and verification of entity object
+    // ***************************************************************
+    console.log('== Testing signature:');
+    let keySet = new keyset();
+    // The last two empty arrays refer to XIDs and Channels
+    // These are empty for a createEntity call and hence they are empty in this call
+    let signedPayLoad = agent.getSignedPayLoad(guid, keySet.ownershipKeyPair, '', [], []);
+    console.log('== signedPayLoad returned by getSignedPayLoad: ', signedPayLoad);
+    assert.equal(
+      signedPayLoad['payload']['data']['guid'],
+      guid,
+      'GUID is not correct in the entity representation'
+    );
+    assert.equal(
+      signedPayLoad['payload']['verify']['verify_key'],
+      keySet.ownershipKeyPair.getPublicKey(),
+      'verify_key is not correct in the entity representation'
+    );
+    assert.equal(
+      signedPayLoad['payload']['verify']['prev_sign'],
+      '',
+      'prev_sign is not correct in the entity representation'
+    );
+    await sodium.ready;
+    let sign = signedPayLoad['sign'];
+    console.log('-- Entity sign: ', sign);
+    // Remove the trailing '=' character
+    let signature = sign.slice(0, -1);
+    console.log('-- Entity signature: ', signature);
+    let sigArray = new Uint8Array(base64url.toBuffer(signature));
+    console.log(sigArray);
+    // Remove the trailing '=' character
+    let verkey = signedPayLoad['payload']['verify']['verify_key'].slice(0, -1);
+    console.log('-- Verify Key: ', verkey);
+    let pubKeyArray = base64url.toBuffer(verkey);
+    console.log('-- Public Key Array: ', pubKeyArray);
+    let intArray = new Uint8Array(pubKeyArray);
+    console.log('-- Public Key Int Array: ', intArray);
+    console.log(keySet.ownershipKeyPair.keypair.publicKey);
+    assert.deepEqual(keySet.ownershipKeyPair.keypair.publicKey, intArray, 'Invalid public key');
+    let plainTxt = JSON.stringify(signedPayLoad['payload']);
+    console.log('-- plainTxt: ', plainTxt);
+    // This should work without throwing an error and return true
+    let ver = sodium.crypto_sign_verify_detached(sigArray, plainTxt, intArray);
+    assert.equal(ver, true);
+    console.log('== SDK agent tests finished');
     console.log('== =================================================');
   });
 });

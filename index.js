@@ -189,28 +189,38 @@ class SignetAgent {
    * @param {SignetEntity} entity SignetEntity object
    * @return {string} A signed canonical JSON representation of the entity
    */
-  getSignedPayload(guid,signetKeyPair,prevSign,xids) {
-    console.log('-- Starting getSignedPayload');
+  getSignedPayLoad(guid,signetKeyPair,prevSign,xids,channels) {
+    console.log('-- Starting getSignedPayLoad');
     console.log('-- signetKeyPair: ', signetKeyPair);
-    let entityRep = {
-      entity_data: {guid: guid},
-      entity_verify: {
+    // Build the payload object
+    let payload = {
+      data: {guid: guid},
+      verify: {
         verify_key: signetKeyPair.getPublicKey(),
         sign_time: (new Date()).toISOString(),
         prev_sign: prevSign
       }
     };
-    if (xids.length > 0) { entityRep['entity_data']['xids'] = xids; }
+    if (xids != undefined) {
+      if (xids.length > 0) { payload['data']['xids'] = xids; }
+    }
+    if (channels != undefined) {
+      if (channels.length > 0) { payload['data']['channels'] = channels; }
+    }
     // Get a JSON representation of the object and sign it
-    let plainTxt = JSON.stringify(entityRep);
+    let plainTxt = JSON.stringify(payload);
     let sigArray = sodium.crypto_sign_detached(plainTxt, signetKeyPair.keypair.privateKey);
     // Get a base64url encoded version of it with a '=' appended
     let signature = base64url(sigArray) + '=';
     console.log('-- Signature: ', signature);
-    entityRep['sign'] = signature;
-    console.log('-- entityRep: ', entityRep);
-    console.log('-- Finished getSignedPayload');
-    return entityRep;
+    // Build the signed payload object
+    let signedPayLoad = {
+      payload: payload,
+      sign: signature
+    };
+    console.log('-- signedPayLoad: ', signedPayLoad);
+    console.log('-- Finished getSignedPayLoad');
+    return signedPayLoad;
   }
 
   /**
@@ -232,14 +242,16 @@ class SignetAgent {
     try {
       let entityKeySet = new SignetKeySet();
       let verkey = entityKeySet.ownershipKeyPair;
-      let entityRep = this.getSignedPayload(guid,verkey,'',[]);
-      let entityJSON = JSON.stringify(entityRep);
-      let params = { entity_json: entityJSON };
+      let signedPayLoad = this.getSignedPayLoad(guid,verkey,'',[],[]);
+      let signedPayLoadJSON = JSON.stringify(signedPayLoad);
+      let params = { signed_payload: signedPayLoadJSON };
       let resp = await sdk.client.doPost('/entity/', params);
       console.log('-- POST call response: ', resp.status, resp.data);
+      if (resp.status != 200) throw(resp.data);
       this.addEntityKeySetToKeyChain(guid, entityKeySet);
       console.log('-- Added entity to key chain');
       entity = new SignetEntity(guid, verkey.getPublicKey());
+      entity.refresh(resp.data);
     } catch (err) {
       console.log('-- Error: ', err.toString());
     }
@@ -261,15 +273,24 @@ class SignetAgent {
     console.log('-- Starting setXID()');
     console.log("--   entity guid = '" + entity.guid + "'");
     console.log("--   new XID  = '" + xid + "'");
-    let params = { xid: xid };
+    let verkey = this.getOwnershipKeyPair(entity.guid);
+    let xidParts = xid.split(':');
+    let xidObj = {
+      nstype: xidParts[0],
+      ns: xidParts[1],
+      name: xidParts[2],
+    };
+    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[xidObj],[]);
+    let signedPayLoadJSON = JSON.stringify(signedPayLoad);
+    let params = { signed_payload: signedPayLoadJSON };
     console.log('-- Params: ', params);
     var retVal = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/setXID', params);
+      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params);
       console.log('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) throw(resp.data);
-      entity.xid = xid;
+      entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
       console.log('-- Error: ', err);
@@ -286,9 +307,10 @@ class SignetAgent {
  * A proxy class for a Signet Entity.
  * <pre>
  * Objects of this class would contain entity attributes such as:
- *   - guid    => GUID of the Signet Entity
- *   - xid     => XID of the Signet Entity
- *   - verkey  => Verification key (Management key) of the Signet Entity
+ *   - guid      => GUID of the Signet Entity
+ *   - xid       => XID of the Signet Entity
+ *   - verkey    => Verification key (Management key) of the Signet Entity
+ *   - prevSign  => Previous Signature of entity
  *
  * Certain method calls to this object may trigger a call to the Signet API.
  * In such cases, these method calls would update the local state.
@@ -303,6 +325,26 @@ class SignetEntity {
     this.guid = guid;
     this.verkey = verkey;
     this.xid = undefined;
+    this.prevSign = undefined;
+    this.signedAt = undefined;
+    this.entityJSON = undefined;
+  }
+
+  /**
+   * Method to take an entity JSON representation object and to set the fields
+   *   of the local object to the representation object.
+   * @param {Object} A representation of an entity that is returned by a REST API call
+   */
+  refresh(entityRep) {
+    console.log('-- refresh starting');
+    let entityObj = JSON.parse(entityRep.entityJSON);
+    this.verkey = entityRep.verkey;
+    this.xid = entityRep.xid;
+    this.prevSign = entityRep.signature;
+    this.signedAt = entityRep.signedAt;
+    this.entityJSON = entityRep.entityJSON;
+    console.log('-- Entity object refreshed: ', this);
+    console.log('-- refresh finished');
   }
 }
 
@@ -377,7 +419,7 @@ class SignetSDK {
       let resp = await this.client.doGet('/entity/'+guid,params);
       console.log('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
-      if (resp.data.xid) entity.xid = resp.data.xid;
+      entity.refresh(resp.data);
     } catch (err) {
       console.log(err.toString());
     }
@@ -404,7 +446,7 @@ class SignetSDK {
       let resp = await this.client.doGet('/entity/fetchByXID/'+xid,params);
       console.log('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
-      entity.xid = resp.data.xid;
+      entity.refresh(resp.data);
     } catch (err) {
       console.log(err.toString());
     }
