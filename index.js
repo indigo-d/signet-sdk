@@ -245,6 +245,7 @@ class SignetAgent {
       this.addEntityKeySetToKeyChain(guid, entityKeySet);
       console.log('-- Added entity to key chain');
       entity = new SignetEntity(guid, verkey.getPublicKey());
+      entity.prevSign = entityRep['sign'];
     } catch (err) {
       console.log('-- Error: ', err.toString());
     }
@@ -266,15 +267,25 @@ class SignetAgent {
     console.log('-- Starting setXID()');
     console.log("--   entity guid = '" + entity.guid + "'");
     console.log("--   new XID  = '" + xid + "'");
-    let params = { xid: xid };
+    let verkey = this.getOwnershipKeyPair(entity.guid);
+    let xidParts = xid.split(':');
+    let xidObj = {
+      nstype: xidParts[0],
+      ns: xidParts[1],
+      name: xidParts[2],
+    };
+    let entityRep = this.getSignedPayload(entity.guid,verkey,entity.prevSign,[xidObj],[]);
+    let entityJSON = JSON.stringify(entityRep);
+    let params = { entity_json: entityJSON };
     console.log('-- Params: ', params);
     var retVal = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/setXID', params);
+      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params);
       console.log('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) throw(resp.data);
       entity.xid = xid;
+      entity.prevSign = entityRep['sign'];
       retVal = true;
     } catch (err) {
       console.log('-- Error: ', err);
@@ -291,9 +302,10 @@ class SignetAgent {
  * A proxy class for a Signet Entity.
  * <pre>
  * Objects of this class would contain entity attributes such as:
- *   - guid    => GUID of the Signet Entity
- *   - xid     => XID of the Signet Entity
- *   - verkey  => Verification key (Management key) of the Signet Entity
+ *   - guid      => GUID of the Signet Entity
+ *   - xid       => XID of the Signet Entity
+ *   - verkey    => Verification key (Management key) of the Signet Entity
+ *   - prevSign  => Previous Signature of entity
  *
  * Certain method calls to this object may trigger a call to the Signet API.
  * In such cases, these method calls would update the local state.
@@ -308,6 +320,7 @@ class SignetEntity {
     this.guid = guid;
     this.verkey = verkey;
     this.xid = undefined;
+    this.prevSign = undefined;
   }
 }
 
