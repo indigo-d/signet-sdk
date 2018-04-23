@@ -186,7 +186,11 @@ class SignetAgent {
   /**
    * Method to generate a signature and a canonical JSON representation
    *   of an entity managed by this agent.
-   * @param {SignetEntity} entity SignetEntity object
+   * @param {string} GUID of the Entity
+   * @param {SignetKeyPair} Signing Key Pair for the Entity
+   * @param {string} Previous Signature
+   * @param {array} Array of XID objects (see Schema for details)
+   * @param {array} Array of Channel objects (see Schema for details)
    * @return {string} A signed canonical JSON representation of the entity
    */
   getSignedPayLoad(guid,signetKeyPair,prevSign,xids,channels) {
@@ -295,8 +299,75 @@ class SignetAgent {
     } catch (err) {
       console.log('-- Error: ', err);
     }
-    console.log('-- Entity object to be returned: ', entity);
     console.log('-- Finished setXID()');
+    console.log('-- -------------------------------------------------');
+    return retVal;
+  }
+
+  /**
+   * Method to generate a rekey payload for an entity managed by this agent.
+   * @param {string} GUIDl of the entity object to rekey
+   * @param {object} SignetKeyPair the old key pair
+   * @param {object} SignetKeyPair the new key pair
+   * @return {string} A signed rekey payload
+   */
+  getRekeyPayLoad(guid, newKeyPair, oldKeyPair, prevSign) {
+    console.log('-- Starting getRekeyPayLoad');
+    console.log('-- GUID: ', guid);
+    console.log('-- New Key Pair: ', newKeyPair.getPublicKey());
+    console.log('-- Old Key Pair: ', oldKeyPair.getPublicKey());
+    console.log('-- Previous Sign: ', prevSign);
+    if ((prevSign == undefined) || (prevSign == '')) throw('Invalid previous sign');
+    let signedPayLoad = this.getSignedPayLoad(guid,newKeyPair,prevSign,[],[]);
+    // Get a JSON representation of the object and sign it with the old key
+    let plainTxt = JSON.stringify(signedPayLoad);
+    let sigArray = sodium.crypto_sign_detached(plainTxt, oldKeyPair.keypair.privateKey);
+    // Get a base64url encoded version of it with a '=' appended
+    let signature = base64url(sigArray) + '=';
+    console.log('-- Signature: ', signature);
+    // Build the rekey payload object
+    let rekeyPayLoad = {
+      signed_payload: signedPayLoad,
+      old_sign: signature
+    };
+    console.log('-- rekeyPayLoad: ', rekeyPayLoad);
+    console.log('-- Finished getRekeyPayLoad');
+    return rekeyPayLoad;
+  }
+
+  /**
+   * Method to rekey an existing entity that is already managed by this agent.
+   * Returns undefined for API call failure or any other run-time error.
+   * @param {SignetEntity} entity Signet entity to set the XID for
+   * @return {expression} An expression that is either true or undefined
+   */
+  async rekey(entity) {
+    console.log('-- -------------------------------------------------');
+    console.log('-- Starting rekey()');
+    console.log("--   entity guid = '" + entity.guid + "'");
+    console.log(entity);
+    let oldKeyPair = this.getOwnershipKeyPair(entity.guid);
+    let newEntityKeySet = new SignetKeySet();
+    let newKeyPair = newEntityKeySet.ownershipKeyPair;
+    let rekeyPayLoad = this.getRekeyPayLoad(
+      entity.guid, newKeyPair, oldKeyPair, entity.prevSign
+    );
+    let rekeyPayLoadJSON = JSON.stringify(rekeyPayLoad);
+    let params = { rekey_payload: rekeyPayLoadJSON };
+    console.log('-- Params: ', params);
+    var retVal = undefined;
+    // Make the REST API call and wait for it to finish
+    try {
+      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/rekey', params);
+      console.log('-- POST call response: ', resp.status, resp.data);
+      if (resp.status != 200) throw('API call to rekey failed');
+      entity.refresh(resp.data);
+      retVal = true;
+    } catch (err) {
+      //console.log('-- Error: ', err);
+      console.log('failed');
+    }
+    console.log('-- Finished rekey()');
     console.log('-- -------------------------------------------------');
     return retVal;
   }

@@ -54,6 +54,7 @@ describe('Signet SDK Tests', function () {
     // Check the signature and verification of entity object
     // ***************************************************************
     console.log('== Testing signature:');
+    console.log('== *************************************************');
     let keySet = new keyset();
     // The last two empty arrays refer to XIDs and Channels
     // These are empty for a createEntity call and hence they are empty in this call
@@ -81,21 +82,40 @@ describe('Signet SDK Tests', function () {
     let signature = sign.slice(0, -1);
     console.log('-- Entity signature: ', signature);
     let sigArray = new Uint8Array(base64url.toBuffer(signature));
-    console.log(sigArray);
+    //console.log(sigArray);
     // Remove the trailing '=' character
     let verkey = signedPayLoad['payload']['verify']['verify_key'].slice(0, -1);
     console.log('-- Verify Key: ', verkey);
     let pubKeyArray = base64url.toBuffer(verkey);
-    console.log('-- Public Key Array: ', pubKeyArray);
+    //console.log('-- Public Key Array: ', pubKeyArray);
     let intArray = new Uint8Array(pubKeyArray);
-    console.log('-- Public Key Int Array: ', intArray);
-    console.log(keySet.ownershipKeyPair.keypair.publicKey);
+    //console.log('-- Public Key Int Array: ', intArray);
+    //console.log(keySet.ownershipKeyPair.keypair.publicKey);
     assert.deepEqual(keySet.ownershipKeyPair.keypair.publicKey, intArray, 'Invalid public key');
     let plainTxt = JSON.stringify(signedPayLoad['payload']);
     console.log('-- plainTxt: ', plainTxt);
     // This should work without throwing an error and return true
     let ver = sodium.crypto_sign_verify_detached(sigArray, plainTxt, intArray);
     assert.equal(ver, true);
+    console.log('== *************************************************');
+    // ***************************************************************
+    // Check the rekey payload
+    // ***************************************************************
+    console.log('== Testing rekey:');
+    console.log('== *************************************************');
+    let keySet2 = new keyset();
+    let rekeyPayLoad = agent.getRekeyPayLoad(
+      guid,
+      keySet2.ownershipKeyPair,
+      keySet.ownershipKeyPair,
+      'some_prev_sign'
+    );
+    console.log(rekeyPayLoad);
+    assert.equal(rekeyPayLoad['signed_payload']['payload']['data']['guid'],guid);
+    assert.equal(rekeyPayLoad['signed_payload']['payload']['verify']['verify_key'],keySet2.ownershipKeyPair.getPublicKey());
+    assert.equal(rekeyPayLoad['signed_payload']['payload']['verify']['prev_sign'],'some_prev_sign');
+    assert.notEqual(rekeyPayLoad['old_sign'],undefined);
+    console.log('== *************************************************');
     console.log('== SDK agent tests finished');
     console.log('== =================================================');
   });
