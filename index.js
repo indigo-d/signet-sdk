@@ -288,7 +288,7 @@ class SignetAgent {
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
     console.log('-- Params: ', params);
-    var retVal = undefined;
+    var retVal = false;
     // Make the REST API call and wait for it to finish
     try {
       let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params);
@@ -297,9 +297,10 @@ class SignetAgent {
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
-      console.log('-- Error: ', err);
+      console.log('-- Error: ', err.response.data);
     }
     console.log('-- Finished setXID()');
+    console.log('-- Returning: ', retVal);
     console.log('-- -------------------------------------------------');
     return retVal;
   }
@@ -361,11 +362,11 @@ class SignetAgent {
       let resp = await sdk.client.doPost('/entity/'+entity.guid+'/rekey', params);
       console.log('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) throw('API call to rekey failed');
+      this.addEntityKeySetToKeyChain(entity.guid, newEntityKeySet);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
-      //console.log('-- Error: ', err);
-      console.log('failed');
+      console.log('-- Error: ', err);
     }
     console.log('-- Finished rekey()');
     console.log('-- -------------------------------------------------');
