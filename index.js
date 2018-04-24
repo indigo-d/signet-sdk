@@ -89,9 +89,34 @@ class SignetKeyPair {
   }
 
   /**
-   * Get the base64 encoded string of the public key of the key pair.
+   * Utility method to convert a base64 URL encoded string
+   *   with a trailing '=' to an Uint8Array.
+   * Note: libsodium expects keys to be Uint8Array objects.
+   * @param {string} base64 URL encoded string with trailing '='
+   * @return {Uint8Array} Array of Uint8 integers
+   */
+  base64URLEncodedStringToArray(keyString) {
+    // Remove the trailing '=' character
+    let modKeyString = keyString.slice(0, -1);
+    return new Uint8Array(base64url.toBuffer(modKeyString));
+  }
+
+  /**
+   * Method to set the key values for a public-private key pair
+   *   with base64 URL encoded strings with trailing '='s.
+   * Note: this method overwrites the original keys in this object!
+   * @param {string} public key: base64 URL encoded string with trailing '='
+   * @param {string} private key: base64 URL encoded string with trailing '='
+   */
+  importKeys(pubKeyString, privKeyString) {
+    this.keypair.publicKey = this.base64URLEncodedStringToArray(pubKeyString);
+    this.keypair.privateKey = this.base64URLEncodedStringToArray(privKeyString);
+  }
+
+  /**
+   * Get the base64 URL encoded string of the public key of the key pair.
    * Add a trailing '=' sign to make it URL-safe.
-   * @return {SignetKey} Public key object.
+   * @return {string} base64 URL encoded string with trailing '='
    */
   getPublicKey() {
     return base64url(this.keypair.publicKey) + '=';
@@ -100,10 +125,18 @@ class SignetKeyPair {
   /**
    * Get the base64 encoded string of the private key of the key pair.
    * Add a trailing '=' sign to make it URL-safe.
-   * @return {SignetKey} Private key object.
+   * @return {string} base64 URL encoded string with trailing '='
    */
   getPrivateKey() {
     return base64url(this.keypair.privateKey) + '=';
+  }
+
+  /**
+   * Export a key pair to two base64 URL encoded strings.
+   * @return {string} base64 URL encoded string with trailing '='
+   */
+  exportKeys() {
+    return [ this.getPublicKey(), this.getPrivateKey() ];
   }
 }
 
@@ -131,11 +164,13 @@ class SignetKeySet {
   }
 
   /**
-   * Get the public key of the ownership key pair.
+   * Export the ownership key pair public key and private key
+   *   as base64 URL encoded strings.
+   *   See SignetKeyPair.exportKeys for details.
    * @return {Array} Array with two SignetKey values
    */
-  getOwnershipKeypairPublicKey() {
-    return this.ownershipKeyPair.getPublicKey();
+  exportOwnershipKeyPair() {
+    return this.ownershipKeyPair.exportKeys();
   }
 }
 
@@ -168,6 +203,18 @@ class SignetAgent {
    */
   addEntityKeySetToKeyChain(guid, entityKeySet) {
     this.keyChain[guid] = entityKeySet;
+  }
+
+  /**
+   * Gets the ownership key set of the entity with the given GUID.
+   * @return {SignetKeySet} The ownership key set or undefined if not found
+   */
+  getOwnershipKeySet(guid) {
+    if ( !(guid in this.keyChain) ) {
+      return undefined;
+    } else {
+      return this.keyChain[guid];
+    }
   }
 
   /**
@@ -338,9 +385,9 @@ class SignetAgent {
 
   /**
    * Method to rekey an existing entity that is already managed by this agent.
-   * Returns undefined for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to set the XID for
-   * @return {expression} An expression that is either true or undefined
+   * Returns false for API call failure or any other run-time error.
+   * @param {SignetEntity} entity Signet entity to rekey
+   * @return {boolean} Boolean value indicating success
    */
   async rekey(entity) {
     console.log('-- -------------------------------------------------');
@@ -369,6 +416,43 @@ class SignetAgent {
       console.log('-- Error: ', err);
     }
     console.log('-- Finished rekey()');
+    console.log('-- -------------------------------------------------');
+    return retVal;
+  }
+
+  /**
+   * Method to add an entity that was created to by another agent to
+   *   this agent.  After the successful completion of this method, the
+   *   entity would now be co-owned/co-managed by the agent that created
+   *   the entity and the agent that invoked this method.  The agent
+   *   that invoked this method should also perform a rekey operation on
+   *   the entity if it wishes to establish exclusive ownership of the
+   *   entity.  Once re-keyed, only this agent can modify the entity.
+   * Returns false for API call failure or any other run-time error.
+   * @param {SignetEntity} entity Signet entity to assign to this agent
+   * @param {string} String representation of a SignetKeyPair public key
+   * @param {string} String representation of a SignetKeyPair private key
+   * @return {boolean} Boolean value indicating success
+   */
+  async assignEntity(entity, publicKeyString, privateKeyString) {
+    console.log('-- -------------------------------------------------');
+    console.log('-- Starting assignEntity()');
+    console.log("-- Entity object: ", entity);
+    console.log("-- Entity guid = '" + entity.guid + "'");
+    console.log("-- publicKeyString = '" + publicKeyString + "'");
+    console.log("-- privateKeyString = '" + privateKeyString + "'");
+    var retVal = undefined;
+    // Make the REST API call and wait for it to finish
+    try {
+      let entityKeySet = new SignetKeySet();
+      // Need to import the given key strings to this new key set
+      entityKeySet.ownershipKeyPair.importKeys(publicKeyString,privateKeyString);
+      this.addEntityKeySetToKeyChain(entity.guid, entityKeySet);
+      retVal = true;
+    } catch (err) {
+      console.log('-- Error: ', err);
+    }
+    console.log('-- Finished assignEntity()');
     console.log('-- -------------------------------------------------');
     return retVal;
   }
