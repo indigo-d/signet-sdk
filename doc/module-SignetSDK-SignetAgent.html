@@ -105,7 +105,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line152">line 152</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -211,7 +211,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line166">line 166</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line204">line 204</a>
     </li></ul></dd>
     
 
@@ -267,7 +267,7 @@ In such cases, these method calls would update the local state.
     
 
     
-    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">(guid)</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
+    <h4 class="name" id="assignEntity"><span class="type-signature">(async) </span>assignEntity<span class="signature">(entity, String, String)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -275,13 +275,14 @@ In such cases, these method calls would update the local state.
 
 
 <div class="description">
-    <pre>
-Async method to create an entity which involves the following:
-  01) Generate Signet key set
-  02) Create an entity on the Signet API
-  03) Add entity key set to agent key chain
-Returns undefined for API call failure or any other run-time error.
-</pre>
+    Method to add an entity that was created to by another agent to
+  this agent.  After the successful completion of this method, the
+  entity would now be co-owned/co-managed by the agent that created
+  the entity and the agent that invoked this method.  The agent
+  that invoked this method should also perform a rekey operation on
+  the entity if it wishes to establish exclusive ownership of the
+  entity.  Once re-keyed, only this agent can modify the entity.
+Returns false for API call failure or any other run-time error.
 </div>
 
 
@@ -317,13 +318,13 @@ Returns undefined for API call failure or any other run-time error.
 
         <tr>
             
-                <td class="name"><code>guid</code></td>
+                <td class="name"><code>entity</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">SignetEntity</span>
 
 
             
@@ -333,7 +334,53 @@ Returns undefined for API call failure or any other run-time error.
 
             
 
-            <td class="description last">GUID for the entity</td>
+            <td class="description last">Signet entity to assign to this agent</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>String</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">representation of a SignetKeyPair public key</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>String</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">representation of a SignetKeyPair private key</td>
         </tr>
 
     
@@ -374,7 +421,121 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line194">line 194</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line437">line 437</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Boolean value indicating success
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">()</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <pre>
+Async method to create an entity which involves the following:
+  01) Generate Signet key set
+  02) Create an entity on the Signet API
+  03) Add entity key set to agent key chain
+Returns undefined for API call failure or any other run-time error.
+</pre>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line287">line 287</a>
     </li></ul></dd>
     
 
@@ -482,7 +643,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line174">line 174</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line224">line 224</a>
     </li></ul></dd>
     
 
@@ -521,6 +682,725 @@ Returns undefined for API call failure or any other run-time error.
     <dd>
         
 <span class="param-type">SignetKeyPair</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getOwnershipKeySet"><span class="type-signature"></span>getOwnershipKeySet<span class="signature">()</span><span class="type-signature"> &rarr; {SignetKeySet}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Gets the ownership key set of the entity with the given GUID.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line212">line 212</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The ownership key set or undefined if not found
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">SignetKeySet</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getRekeyPayLoad"><span class="type-signature"></span>getRekeyPayLoad<span class="signature">(GUID, SignetKeyPair, SignetKeyPair)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to generate a rekey payload for an entity managed by this agent.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>GUID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the entity object to rekey</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>SignetKeyPair</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the old key pair</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>SignetKeyPair</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the new key pair</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A signed rekey payload
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getSignedPayLoad"><span class="type-signature"></span>getSignedPayLoad<span class="signature">(GUID, Signing, Previous, Array, Array)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to generate a signature and a canonical JSON representation
+  of an entity managed by this agent.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>GUID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the Entity</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Signing</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SignetKeyPair</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Key Pair for the Entity</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Previous</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Signature</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of XID objects (see Schema for details)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of Channel objects (see Schema for details)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line243">line 243</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A signed canonical JSON representation of the entity
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="rekey"><span class="type-signature">(async) </span>rekey<span class="signature">(entity)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to rekey an existing entity that is already managed by this agent.
+Returns false for API call failure or any other run-time error.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>entity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SignetEntity</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Signet entity to rekey</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line392">line 392</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Boolean value indicating success
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
 
 
     </dd>
@@ -663,7 +1543,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line227">line 227</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line322">line 322</a>
     </li></ul></dd>
     
 
@@ -735,7 +1615,7 @@ Returns undefined for API call failure or any other run-time error.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Apr 17 2018 18:42:46 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Apr 24 2018 14:30:45 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
