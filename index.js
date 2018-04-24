@@ -306,7 +306,7 @@ class SignetAgent {
 
   /**
    * Method to generate a rekey payload for an entity managed by this agent.
-   * @param {string} GUIDl of the entity object to rekey
+   * @param {string} GUID of the entity object to rekey
    * @param {object} SignetKeyPair the old key pair
    * @param {object} SignetKeyPair the new key pair
    * @return {string} A signed rekey payload
