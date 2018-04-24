@@ -100,7 +100,7 @@ The keypair is generated using the libsodium library.</div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line78">line 78</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -154,7 +154,274 @@ The keypair is generated using the libsodium library.</div>
     
 
     
-    <h4 class="name" id="getPrivateKey"><span class="type-signature"></span>getPrivateKey<span class="signature">()</span><span class="type-signature"> &rarr; {SignetKey}</span></h4>
+    <h4 class="name" id="base64URLEncodedStringToArray"><span class="type-signature"></span>base64URLEncodedStringToArray<span class="signature">(base64)</span><span class="type-signature"> &rarr; {Uint8Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Utility method to convert a base64 URL encoded string
+  with a trailing '=' to an Uint8Array.
+Note: libsodium expects keys to be Uint8Array objects.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>base64</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">URL encoded string with trailing '='</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line98">line 98</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Array of Uint8 integers
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Uint8Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="exportKeys"><span class="type-signature"></span>exportKeys<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Export a key pair to two base64 URL encoded strings.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    base64 URL encoded string with trailing '='
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPrivateKey"><span class="type-signature"></span>getPrivateKey<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -207,7 +474,7 @@ Add a trailing '=' sign to make it URL-safe.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line104">line 104</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -234,7 +501,7 @@ Add a trailing '=' sign to make it URL-safe.
 
         
 <div class="param-desc">
-    Private key object.
+    base64 URL encoded string with trailing '='
 </div>
 
 
@@ -245,7 +512,7 @@ Add a trailing '=' sign to make it URL-safe.
     </dt>
     <dd>
         
-<span class="param-type">SignetKey</span>
+<span class="param-type">string</span>
 
 
     </dd>
@@ -263,7 +530,7 @@ Add a trailing '=' sign to make it URL-safe.
     
 
     
-    <h4 class="name" id="getPublicKey"><span class="type-signature"></span>getPublicKey<span class="signature">()</span><span class="type-signature"> &rarr; {SignetKey}</span></h4>
+    <h4 class="name" id="getPublicKey"><span class="type-signature"></span>getPublicKey<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
     
 
     
@@ -271,7 +538,7 @@ Add a trailing '=' sign to make it URL-safe.
 
 
 <div class="description">
-    Get the base64 encoded string of the public key of the key pair.
+    Get the base64 URL encoded string of the public key of the key pair.
 Add a trailing '=' sign to make it URL-safe.
 </div>
 
@@ -316,7 +583,7 @@ Add a trailing '=' sign to make it URL-safe.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line95">line 95</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line121">line 121</a>
     </li></ul></dd>
     
 
@@ -343,7 +610,7 @@ Add a trailing '=' sign to make it URL-safe.
 
         
 <div class="param-desc">
-    Public key object.
+    base64 URL encoded string with trailing '='
 </div>
 
 
@@ -354,13 +621,173 @@ Add a trailing '=' sign to make it URL-safe.
     </dt>
     <dd>
         
-<span class="param-type">SignetKey</span>
+<span class="param-type">string</span>
 
 
     </dd>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="importKeys"><span class="type-signature"></span>importKeys<span class="signature">(public, private)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to set the key values for a public-private key pair
+  with base64 URL encoded strings with trailing '='s.
+Note: this method overwrites the original keys in this object!
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">key: base64 URL encoded string with trailing '='</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>private</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">key: base64 URL encoded string with trailing '='</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line111">line 111</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -388,7 +815,7 @@ Add a trailing '=' sign to make it URL-safe.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Apr 17 2018 18:42:46 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Apr 24 2018 14:30:45 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

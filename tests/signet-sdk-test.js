@@ -31,6 +31,35 @@ describe('Signet SDK Tests', function () {
   beforeEach(() => sandbox = sinon.sandbox.create());
   afterEach(() => sandbox.restore());
 
+  // SignetKeySet and SignetKeyPair tests
+  it('SignetKeySet and SignetKeyPair tests', async function () {
+    console.log('== =================================================');
+    console.log('== SignetKeySet and SignetKeyPair tests starting');
+    let keySetA = new keyset();
+    let keyPairA = keySetA.ownershipKeyPair;
+    let keySetB = new keyset();
+    let keyPairB = keySetB.ownershipKeyPair;
+    assert.notEqual(keySetA, keySetB);
+    assert.notEqual(keyPairA, keyPairB);
+    // Now set key pair B to have the same keys as key pair A
+    let aKeys = keySetA.exportOwnershipKeyPair();
+    console.log('== Exported Key Set A: ', aKeys);
+    let bKeys = keySetB.exportOwnershipKeyPair();
+    console.log('== Exported Key Set B: ', bKeys);
+    keyPairB.importKeys(aKeys[0],aKeys[1]);
+    let bKeysAfterImport = keySetB.exportOwnershipKeyPair();
+    console.log('== Exported Key Set B after import: ', bKeysAfterImport);
+    assert.deepEqual(aKeys,bKeysAfterImport);
+    assert.deepEqual(keySetA,keySetB);
+    // Now sign an object with A's keys and verify with B's keys
+    let plainTxt = JSON.stringify({someVal: 'Some Value'});
+    console.log('== plainTxt: ', plainTxt);
+    let sigArray = sodium.crypto_sign_detached(plainTxt, keySetA.ownershipKeyPair.keypair.privateKey);
+    let ver = sodium.crypto_sign_verify_detached(sigArray, plainTxt, keySetB.ownershipKeyPair.keypair.publicKey);
+    assert.ok(ver);
+    console.log('== SignetKeySet and SignetKeyPair tests finished');
+    console.log('== =================================================');
+  });
   // SDK initialization tests
   it('SDK initialization tests', async function () {
     console.log('== =================================================');
