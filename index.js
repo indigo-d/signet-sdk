@@ -376,7 +376,7 @@ class SignetAgent {
     let xidObj = {
       nstype: xidParts[0],
       ns: xidParts[1],
-      name: xidParts[2],
+      name: xidParts[2]
     };
     let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[xidObj],[]);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
