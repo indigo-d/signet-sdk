@@ -327,23 +327,18 @@ class SignetAgent {
    * @param {string} Optional: XID of the Entity
    * @return {SignetEntity} A SignetEntity object or undefined
    */
-  async createEntity(guid,xid=undefined) {
+  async createEntity(guid,opts={}) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting createEntity()');
-    console.log('--   guid = ', guid);
+    console.log('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
       let entityKeySet = new SignetKeySet();
       let verkey = entityKeySet.ownershipKeyPair;
       let xidArray = [];
-      if (xid) {
-        let xidParts = xid.split(':');
-        let xidObj = {
-          nstype: xidParts[0],
-          ns: xidParts[1],
-          name: xidParts[2]
-        };
+      if (opts['xid']) {
+        let xidObj = this.getXIDObject(opts['xid'][0],opts['xid'][1],opts['xid'][2]);
         xidArray.push(xidObj);
       }
       let signedPayLoad = this.getSignedPayLoad(guid,verkey,'',xidArray,[]);
@@ -370,25 +365,57 @@ class SignetAgent {
   }
 
   /**
+   * Method to contruct an XID object given nsType, nsName, and XID string
+   * @param {str} Type of the namespace
+   * @param {str} Name of the namespace
+   * @param {str} XID string
+   */
+  getXIDObject(nsType, nsName, xidStr) {
+    return {
+      nstype: nsType,
+      ns: nsName,
+      name: xidStr
+    };
+  }
+
+  /**
+   * Method to contruct a channel object given chType, version, and endpoint
+   * @param {str} Type of the channel
+   * @param {str} Version of the channel
+   * @param {str} Endpoint for the channel
+   */
+  getChannelObject(chType, version, endpoint) {
+    return {
+      chtype: chType,
+      version: version,
+      endpoint: endpoint
+    };
+  }
+
+  /**
    * Method to set an XID for an entity both locally and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} xid to set
+   * @param {str} Type of the namespace
+   * @param {str} Name of the namespace
+   * @param {str} XID to set
    * @return {boolean} true if successful or false for failure
    */
-  async setXID(entity, xid) {
+  async setXID(entity, nsType, nsName, xid) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting setXID()');
     console.log("-- entity guid = '" + entity.guid + "'");
+    console.log("-- nsType  = '" + nsType + "'");
+    console.log("-- nsName  = '" + nsName + "'");
     console.log("-- xid  = '" + xid + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
-    let xidParts = xid.split(':');
-    let xidObj = {
-      nstype: xidParts[0],
-      ns: xidParts[1],
-      name: xidParts[2]
-    };
-    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[xidObj],[]);
+    let xidObj = this.getXIDObject(nsType, nsName, xid);
+    let channelArray = [];
+    if (entity.channel) {
+      let channelParts = entity.channel.split('#');
+      channelArray.push(this.getChannelObject(channelParts[0],channelParts[1],channelParts[2]));
+    }
+    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[xidObj],channelArray);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
     console.log('-- Params: ', params);
@@ -418,24 +445,28 @@ class SignetAgent {
   /**
    * Method to set a channel for an entity both locally and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} channel to set
+   * @param {SignetEntity} entity Signet entity to set the channel for
+   * @param {str} Type of the channel
+   * @param {str} Version of the channel
+   * @param {str} Endpoint for the channel
    * @return {boolean} true if successful or false for failure
    */
-  async setChannel(entity, channel) {
+  async setChannel(entity, chType, chVersion, chEndPoint) {
     var retVal = false;
     console.log('-- -------------------------------------------------');
     console.log('-- Starting setChannel()');
     console.log("-- entity guid = '" + entity.guid + "'");
-    console.log("-- channel  = '" + channel + "'");
+    console.log("-- chType = '" + chType + "'");
+    console.log("-- chVersion = '" + chVersion + "'");
+    console.log("-- chEndPoint = '" + chEndPoint + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
-    let channelParts = channel.split('#');
-    let channelObj = {
-      chtype: channelParts[0],
-      version: channelParts[1],
-      endpoint: channelParts[2]
-    };
-    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[],[channelObj]);
+    let xidArray = [];
+    if (entity.xid) {
+      let xidParts = entity.xid.split(':');
+      xidArray.push(this.getXIDObject(xidParts[0],xidParts[1],xidParts[2]));
+    }
+    let channelObj = this.getChannelObject(chType, chVersion, chEndPoint);
+    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,xidArray,[channelObj]);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
     console.log('-- Params: ', params);
@@ -580,6 +611,7 @@ class SignetEntity {
     this.guid = guid;
     this.verkey = verkey;
     this.xid = undefined;
+    this.channel = undefined;
     this.prevSign = undefined;
     this.signedAt = undefined;
     this.entityJSON = undefined;
@@ -688,13 +720,18 @@ class SignetSDK {
   /**
    * Async method to fetch an entity by XID from the Signet API Service.
    * Returns undefined for API call failure or any other run-time error.
-   * @param {str} xid XID of the Signet entity to fetch
+   * @param {str} Type of the namespace
+   * @param {str} Name of the namespace
+   * @param {str} XID string
    * @return {SignetEntity} A SignetEntity object or undefined
    */
-  async fetchEntityByXID(xid) {
+  async fetchEntityByXID(nsType, nsName, xidStr) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting fetchEntityByXID()');
-    console.log("--   xid = '" + xid + "'");
+    console.log("-- nsType  = '" + nsType + "'");
+    console.log("-- nsName  = '" + nsName + "'");
+    console.log("-- xidStr  = '" + xidStr + "'");
+    let xid = nsType + ':' + nsName + ':' + xidStr;
     let params = {};
     var entity = undefined;
     // Make the REST API call and wait for it to finish

@@ -17,11 +17,14 @@ Developer notes for contributing to this Node JS library.
   - Clone the repo (make sure you are on the 'develop' branch)
   - Run: ``` npm install ```
 
-## Testing Setup
+## Testing
 
 Once Node JS is installed, do the following:
 
-  - Run: ``` npm test ```
+  - Run: ``` npm test ``` (Note: this will run the unit tests only!)
+  - ``` make ut ``` will run the unit tests
+  - ``` make it ``` will run the integration tests (Note: The API server must be running on localhost:1337)
+  - ``` make test ``` will run both the unit tests and the integration tests
 
 ## JSDOC Documentation
 

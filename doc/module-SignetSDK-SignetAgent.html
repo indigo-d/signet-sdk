@@ -105,7 +105,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line188">line 188</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line180">line 180</a>
     </li></ul></dd>
     
 
@@ -211,7 +211,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line204">line 204</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line215">line 215</a>
     </li></ul></dd>
     
 
@@ -421,7 +421,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line437">line 437</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line567">line 567</a>
     </li></ul></dd>
     
 
@@ -477,7 +477,7 @@ Returns false for API call failure or any other run-time error.
     
 
     
-    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">()</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
+    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">(Required:, Optional:)</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
     
 
     
@@ -500,6 +500,78 @@ Returns undefined for API call failure or any other run-time error.
 
 
 
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Required:</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">GUID of the Entity</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Optional:</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">XID of the Entity</td>
+        </tr>
+
+    
+    </tbody>
+</table>
 
 
 
@@ -535,7 +607,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line287">line 287</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line330">line 330</a>
     </li></ul></dd>
     
 
@@ -574,6 +646,344 @@ Returns undefined for API call failure or any other run-time error.
     <dd>
         
 <span class="param-type">SignetEntity</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getChannelObject"><span class="type-signature"></span>getChannelObject<span class="signature">(Type, Version, Endpoint)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to contruct a channel object given chType, version, and endpoint
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the channel</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the channel</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">for the channel</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line387">line 387</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getOrgSignature"><span class="type-signature"></span>getOrgSignature<span class="signature">(Object)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to generate an org signature
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Object</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">that is the payload of the whole request</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line267">line 267</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A signed canonical JSON representation of the object
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
 
 
     </dd>
@@ -643,7 +1053,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line224">line 224</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line235">line 235</a>
     </li></ul></dd>
     
 
@@ -751,7 +1161,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line212">line 212</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line223">line 223</a>
     </li></ul></dd>
     
 
@@ -954,7 +1364,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line362">line 362</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line496">line 496</a>
     </li></ul></dd>
     
 
@@ -1204,7 +1614,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line243">line 243</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line288">line 288</a>
     </li></ul></dd>
     
 
@@ -1249,6 +1659,187 @@ Returns undefined for API call failure or any other run-time error.
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getXIDObject"><span class="type-signature"></span>getXIDObject<span class="signature">(Type, Name, XID)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to contruct an XID object given nsType, nsName, and XID string
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the namespace</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the namespace</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>XID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">string</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line373">line 373</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1362,7 +1953,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line392">line 392</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line522">line 522</a>
     </li></ul></dd>
     
 
@@ -1418,7 +2009,320 @@ Returns false for API call failure or any other run-time error.
     
 
     
-    <h4 class="name" id="setXID"><span class="type-signature">(async) </span>setXID<span class="signature">(entity, xid)</span><span class="type-signature"> &rarr; {expression}</span></h4>
+    <h4 class="name" id="setChannel"><span class="type-signature">(async) </span>setChannel<span class="signature">(entity, Type, Version, Endpoint)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to set a channel for an entity both locally and on the Signet API server.
+Returns false for API call failure or any other run-time error.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>entity</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SignetEntity</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Signet entity to set the channel for</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the channel</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the channel</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">for the channel</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line454">line 454</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    true if successful or false for failure
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setOrgKeys"><span class="type-signature"></span>setOrgKeys<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Set the Organization public and private key strings.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line198">line 198</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setXID"><span class="type-signature">(async) </span>setXID<span class="signature">(entity, Type, Name, XID)</span><span class="type-signature"> &rarr; {boolean}</span></h4>
     
 
     
@@ -1427,7 +2331,7 @@ Returns false for API call failure or any other run-time error.
 
 <div class="description">
     Method to set an XID for an entity both locally and on the Signet API server.
-Returns undefined for API call failure or any other run-time error.
+Returns false for API call failure or any other run-time error.
 </div>
 
 
@@ -1486,7 +2390,7 @@ Returns undefined for API call failure or any other run-time error.
 
         <tr>
             
-                <td class="name"><code>xid</code></td>
+                <td class="name"><code>Type</code></td>
             
 
             <td class="type">
@@ -1502,7 +2406,53 @@ Returns undefined for API call failure or any other run-time error.
 
             
 
-            <td class="description last">New XID to set</td>
+            <td class="description last">of the namespace</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of the namespace</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>XID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">str</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">to set</td>
         </tr>
 
     
@@ -1543,7 +2493,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line322">line 322</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line404">line 404</a>
     </li></ul></dd>
     
 
@@ -1570,7 +2520,7 @@ Returns undefined for API call failure or any other run-time error.
 
         
 <div class="param-desc">
-    An expression that is either true or undefined
+    true if successful or false for failure
 </div>
 
 
@@ -1581,13 +2531,171 @@ Returns undefined for API call failure or any other run-time error.
     </dt>
     <dd>
         
-<span class="param-type">expression</span>
+<span class="param-type">boolean</span>
 
 
     </dd>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="signObject"><span class="type-signature"></span>signObject<span class="signature">(Object, Array)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Method to generate a signature of an object
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>Object</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">to be signed</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>Array</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Unit8Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">of Uint8 objects (generated by libsodium)</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line249">line 249</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1615,7 +2723,7 @@ Returns undefined for API call failure or any other run-time error.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Apr 24 2018 14:30:45 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Apr 27 2018 16:11:52 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
