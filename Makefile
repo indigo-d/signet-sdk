@@ -1,7 +1,8 @@
 help:
 	@echo "make doc => Generates the doc files use jsdoc"
-	@echo "make it  => Run Integration Tests"
-	@echo "make ut  => Run Unit Tests"
+	@echo "make it  => Run integration tests"
+	@echo "make ut  => Run unit tests"
+	@echo "make ut  => Run all tests"
 
 clean:
 	rm -rf doc
