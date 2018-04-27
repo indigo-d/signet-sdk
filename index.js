@@ -206,8 +206,16 @@ class SignetAgent {
    * @params {string} Organization private key string ending in '='
    */
   setOrgKeys(pubKeyStr, privateKeyStr) {
-    this.orgPublicKey = pubKeyStr;
-    this.orgPrivateKey = privateKeyStr;
+    if (!pubKeyStr) throw('Org Public Key is missing');
+    if (pubKeyStr.substr(this.orgPublicKey.length - 1) != '=') {
+      throw('Org Public Key does not end with = character');
+    }
+    if (!privateKeyStr) throw('Org Private Key is missing');
+    if (privateKeyStr.substr(this.orgPrivateKey.length - 1) != '=') {
+      throw('Org Private Key does not end with = character');
+    }
+    this.orgPublicKey = pubKeyStr; // Must have trailing '='
+    this.orgPrivateKey = privateKeyStr; // Must have trailing '='
   }
 
   /**
@@ -270,7 +278,7 @@ class SignetAgent {
     console.log('-- getOrgSignature starting');
     if (!this.orgPrivateKey) throw('Org private key not set');
     if (!this.orgPublicKey) throw('Org public key not set');
-    let privateKeyArray = new Uint8Array(base64url.toBuffer(this.orgPrivateKey));
+    let privateKeyArray = new Uint8Array(base64url.toBuffer(this.orgPrivateKey.slice(0,-1)));
     let orgSign = this.signObject(payLoad,privateKeyArray);
     console.log('-- orgSign = ', orgSign);
     console.log('-- getOrgSignature finished');
@@ -340,7 +348,7 @@ class SignetAgent {
       let params = { signed_payload: JSON.stringify(signedPayLoad) };
       let orgSign = this.getOrgSignature(signedPayLoad);
       let headers = {
-        'X-Org-Key': this.orgPublicKey + '=', // Add the trailing '='
+        'X-Org-Key': this.orgPublicKey,
         'X-Org-Sign': orgSign
       };
       let resp = await sdk.client.doPost('/entity/', params, headers);
@@ -384,7 +392,7 @@ class SignetAgent {
     console.log('-- Params: ', params);
     let orgSign = this.getOrgSignature(signedPayLoad);
     let headers = {
-      'X-Org-Key': this.orgPublicKey + '=', // Add the trailing '='
+      'X-Org-Key': this.orgPublicKey,
       'X-Org-Sign': orgSign
     };
     console.log('-- Headers: ', headers);
