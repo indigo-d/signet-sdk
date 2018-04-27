@@ -22,3 +22,5 @@ ut:
 	@echo "Starting Unit Tests"
 	@mocha tests/unit
 	@echo "Finished Unit Tests"
+
+test: ut it
