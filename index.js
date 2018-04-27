@@ -206,6 +206,14 @@ class SignetAgent {
    * @params {string} Organization private key string ending in '='
    */
   setOrgKeys(pubKeyStr, privateKeyStr) {
+    if (!pubKeyStr) throw('Org Public Key is missing');
+    if (pubKeyStr.substr(this.orgPublicKey.length - 1) != '=') {
+      throw('Org Public Key does not end with = character');
+    }
+    if (!privateKeyStr) throw('Org Private Key is missing');
+    if (privateKeyStr.substr(this.orgPrivateKey.length - 1) != '=') {
+      throw('Org Private Key does not end with = character');
+    }
     this.orgPublicKey = pubKeyStr; // Must have trailing '='
     this.orgPrivateKey = privateKeyStr; // Must have trailing '='
   }
