@@ -55,12 +55,10 @@ describe('Signet Integration Tests', function () {
     // Set Channel
     console.log('== =================================================');
     console.log('== Set Channel');
-    channel = 'REST#v1#http://example.com/endpoint/'
-            + Math.random().toString(36).substr(2, 5)
-    ;
-    let retSetChannel = await agent.setChannel(entity, channel);
+    channel = Math.random().toString(36).substr(2, 5);
+    let retSetChannel = await agent.setChannel(entity, 'REST', 'v1', channel);
     assert.ok(retSetChannel);
-    assert.equal(entity.channel, channel);
+    assert.equal(entity.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
     // Fetch entity
     console.log('== =================================================');
@@ -68,7 +66,7 @@ describe('Signet Integration Tests', function () {
     let fetchedEntity = await sdk.fetchEntity(guid);
     console.log('== Entity fetched: ', fetchedEntity);
     assert.equal(fetchedEntity.guid, guid);
-    assert.equal(fetchedEntity.channel, channel);
+    assert.equal(fetchedEntity.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
   });
   it('SDK Scenario 02: Set XID and fetch entity by XID', async function () {
@@ -79,7 +77,7 @@ describe('Signet Integration Tests', function () {
     let ret1 = await agent.setXID(entity, 'dn', 'lola.com', xid1);
     assert.ok(ret1);
     assert.equal(entity.xid, 'dn:lola.com:'+xid1);
-    assert.equal(entity.channel, channel);
+    assert.equal(entity.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
     // Fetch entity by XID
     console.log('== =================================================');
@@ -87,7 +85,7 @@ describe('Signet Integration Tests', function () {
     let fetchedEntityByXID = await sdk.fetchEntityByXID('dn','lola.com',xid1);
     console.log('== Entity fetched by XID: ', fetchedEntityByXID);
     assert.equal(fetchedEntityByXID.xid, 'dn:lola.com:'+xid1);
-    assert.equal(fetchedEntityByXID.channel, channel);
+    assert.equal(fetchedEntityByXID.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
   });
   it('SDK Scenario 03: Rekey entity tests', async function () {
@@ -103,6 +101,7 @@ describe('Signet Integration Tests', function () {
     let ret2 = await agent.setXID(entity, 'dn', 'lola.com', xid2);
     assert.ok(ret2);
     assert.equal(entity.xid, 'dn:lola.com:'+xid2);
+    assert.equal(entity.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
     // Fetch entity by XID after rekey
     console.log('== =================================================');
@@ -110,6 +109,7 @@ describe('Signet Integration Tests', function () {
     let fetchedEntityByXIDAfterRekey = await sdk.fetchEntityByXID('dn','lola.com',xid2);
     console.log('== Entity fetched by XID after rekey: ', fetchedEntityByXIDAfterRekey);
     assert.equal(fetchedEntityByXIDAfterRekey.xid, 'dn:lola.com:'+xid2);
+    assert.equal(fetchedEntityByXIDAfterRekey.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
     // Rekey entity again and run some negative tests
     console.log('== =================================================');
@@ -135,6 +135,7 @@ describe('Signet Integration Tests', function () {
     assert.equal(entity.guid, guid);
     assert.equal(entity.xid, 'dn:lola.com:'+xid2);
     assert.notEqual(entity.xid, 'dn:lola.com:'+xid3);
+    assert.equal(entity.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
     // Reset to new key, set XID to a new value and then check XID
     console.log('== =================================================');
@@ -148,6 +149,7 @@ describe('Signet Integration Tests', function () {
     let entity3 = await sdk.fetchEntityByXID('dn','lola.com',xid3);
     console.log('== Entity3: ', entity3);
     assert.equal(entity3.xid, 'dn:lola.com:'+xid3);
+    assert.equal(entity3.channel, 'REST#v1#'+channel);
     console.log('== =================================================');
   });
   it('Scenario 04: Assign Entity Workflow', async function () {
@@ -170,6 +172,7 @@ describe('Signet Integration Tests', function () {
     assert.ok(rekeyRetVal);
     let eByXID = await sdk.fetchEntityByXID('dn','lola.com',xid3);
     assert.equal(eByXID.xid, 'dn:lola.com:'+xid3);
+    assert.equal(eByXID.channel, 'REST#v1#'+channel);
     // Negative test: try to set XID by old agent (should fail!)
     let setXIDByOldAgentRetVal = await agent.setXID(e4, 'dn', 'lola.com', 'foo');
     assert.equal(setXIDByOldAgentRetVal, false);
@@ -183,6 +186,7 @@ describe('Signet Integration Tests', function () {
     e4 = await sdk.fetchEntityByXID('dn','lola.com',xid4);
     console.log('== Entity4: ', e4);
     assert.equal(e4.xid, 'dn:lola.com:'+xid4);
+    assert.equal(e4.channel, 'REST#v1#'+channel);
     // Positive test: agent2 should create an entity with XID set
     console.log('== =================================================');
     console.log('== Agent2 create entity with XID set');

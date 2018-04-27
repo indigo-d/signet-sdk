@@ -445,24 +445,28 @@ class SignetAgent {
   /**
    * Method to set a channel for an entity both locally and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} channel to set
+   * @param {SignetEntity} entity Signet entity to set the channel for
+   * @param {str} Type of the channel
+   * @param {str} Version of the channel
+   * @param {str} Endpoint for the channel
    * @return {boolean} true if successful or false for failure
    */
-  async setChannel(entity, channel) {
+  async setChannel(entity, chType, chVersion, chEndPoint) {
     var retVal = false;
     console.log('-- -------------------------------------------------');
     console.log('-- Starting setChannel()');
     console.log("-- entity guid = '" + entity.guid + "'");
-    console.log("-- channel  = '" + channel + "'");
+    console.log("-- chType = '" + chType + "'");
+    console.log("-- chVersion = '" + chVersion + "'");
+    console.log("-- chEndPoint = '" + chEndPoint + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
-    let channelParts = channel.split('#');
-    let channelObj = {
-      chtype: channelParts[0],
-      version: channelParts[1],
-      endpoint: channelParts[2]
-    };
-    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[],[channelObj]);
+    let xidArray = [];
+    if (entity.xid) {
+      let xidParts = entity.xid.split(':');
+      xidArray.push(this.getXIDObject(xidParts[0],xidParts[1],xidParts[2]));
+    }
+    let channelObj = this.getChannelObject(chType, chVersion, chEndPoint);
+    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,xidArray,[channelObj]);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
     console.log('-- Params: ', params);
