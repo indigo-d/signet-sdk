@@ -323,9 +323,11 @@ class SignetAgent {
    *   03) Add entity key set to agent key chain
    * Returns undefined for API call failure or any other run-time error.
    * </pre>
+   * @param {string} Required: GUID of the Entity
+   * @param {string} Optional: XID of the Entity
    * @return {SignetEntity} A SignetEntity object or undefined
    */
-  async createEntity(guid) {
+  async createEntity(guid,xid=undefined) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting createEntity()');
     console.log('--   guid = ', guid);
@@ -334,7 +336,17 @@ class SignetAgent {
     try {
       let entityKeySet = new SignetKeySet();
       let verkey = entityKeySet.ownershipKeyPair;
-      let signedPayLoad = this.getSignedPayLoad(guid,verkey,'',[],[]);
+      let xidArray = [];
+      if (xid) {
+        let xidParts = xid.split(':');
+        let xidObj = {
+          nstype: xidParts[0],
+          ns: xidParts[1],
+          name: xidParts[2]
+        };
+        xidArray.push(xidObj);
+      }
+      let signedPayLoad = this.getSignedPayLoad(guid,verkey,'',xidArray,[]);
       let params = { signed_payload: JSON.stringify(signedPayLoad) };
       let orgSign = this.getOrgSignature(signedPayLoad);
       let headers = {
