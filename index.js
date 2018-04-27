@@ -1,15 +1,5 @@
 /**
  * Signet SDK is a NodeJS module to act as an interface to the Signet API.
- * <pre>
- * Usage:
- *   var sdk = require('signet-sdk');
- *   sdk.connect('http://localhost:1337'); // Set the Signet API endpoint
- *   var agent = sdk.createAgent(); // Create a new agent (local object)
- *   var entity = agent.createEntity('12345678-aaaa-bbbb-cccc-1234567890ab'); // GUID must be of UUID4 format
- *   agent.setXID(entity,'XID1'); // Set the XID of the entity
- *   var eByGUID = sdk.fetchEntity('guid1'); // Fetched entity object
- *   var eByXID = sdk.fetchEntityByXID('XID1'); // Fetched entity object
- * </pre>
  * @module SignetSDK
  */
 const async  = require('async');
@@ -369,16 +359,16 @@ class SignetAgent {
 
   /**
    * Method to set an XID for an entity both locally and on the Signet API server.
-   * Returns undefined for API call failure or any other run-time error.
+   * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} xid New XID to set
-   * @return {expression} An expression that is either true or undefined
+   * @param {str} xid to set
+   * @return {boolean} true if successful or false for failure
    */
   async setXID(entity, xid) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting setXID()');
-    console.log("--   entity guid = '" + entity.guid + "'");
-    console.log("--   new XID  = '" + xid + "'");
+    console.log("-- entity guid = '" + entity.guid + "'");
+    console.log("-- xid  = '" + xid + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
     let xidParts = xid.split(':');
     let xidObj = {
@@ -408,6 +398,46 @@ class SignetAgent {
       console.log('-- Error: ', err.response.data);
     }
     console.log('-- Finished setXID()');
+    console.log('-- Returning: ', retVal);
+    console.log('-- -------------------------------------------------');
+    return retVal;
+  }
+
+  /**
+   * Method to set a channel for an entity both locally and on the Signet API server.
+   * Returns false for API call failure or any other run-time error.
+   * @param {SignetEntity} entity Signet entity to set the XID for
+   * @param {str} channel to set
+   * @return {boolean} true if successful or false for failure
+   */
+  async setChannel(entity, channel) {
+    var retVal = false;
+    console.log('-- -------------------------------------------------');
+    console.log('-- Starting setChannel()');
+    console.log("-- entity guid = '" + entity.guid + "'");
+    console.log("-- channel  = '" + channel + "'");
+    let verkey = this.getOwnershipKeyPair(entity.guid);
+    let channelParts = channel.split('#');
+    let channelObj = {
+      chtype: channelParts[0],
+      version: channelParts[1],
+      endpoint: channelParts[2]
+    };
+    let signedPayLoad = this.getSignedPayLoad(entity.guid,verkey,entity.prevSign,[],[channelObj]);
+    let signedPayLoadJSON = JSON.stringify(signedPayLoad);
+    let params = { signed_payload: signedPayLoadJSON };
+    console.log('-- Params: ', params);
+    // Make the REST API call and wait for it to finish
+    try {
+      let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params);
+      console.log('-- POST call response: ', resp.status, resp.data);
+      if (resp.status != 200) throw(resp.data);
+      entity.refresh(resp.data);
+      retVal = true;
+    } catch (err) {
+      console.log('-- Error: ', err.response.data);
+    }
+    console.log('-- Finished setChannel()');
     console.log('-- Returning: ', retVal);
     console.log('-- -------------------------------------------------');
     return retVal;
@@ -553,6 +583,7 @@ class SignetEntity {
     let entityObj = JSON.parse(entityRep.entityJSON);
     this.verkey = entityRep.verkey;
     this.xid = entityRep.xid;
+    this.channel = entityRep.channel;
     this.prevSign = entityRep.signature;
     this.signedAt = entityRep.signedAt;
     this.entityJSON = entityRep.entityJSON;
