@@ -4,7 +4,7 @@
   "description": "Signet SDK in Javascript, implemented as a node module.  It is meant to be used within React JS and React Native applications.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests"
+    "test": "mocha tests/unit"
   },
   "repository": {
     "type": "git",
