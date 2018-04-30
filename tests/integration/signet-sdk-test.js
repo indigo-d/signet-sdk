@@ -36,9 +36,6 @@ describe('Signet Integration Tests', function () {
   sdk.initialize('http://localhost:1337');
   it('SDK Scenario 01: Create entity, set channel and fetch entity', async function () {
     console.log('== =================================================');
-    // Generate GUID
-    guid = await sdk.genGUID();
-    console.log('== GUID: ', guid);
     // Create Agent
     agent = await sdk.createAgent();
     agent.setOrgKeys(orgPublicKey, orgPrivateKey);
@@ -47,10 +44,12 @@ describe('Signet Integration Tests', function () {
     // Create an entity
     console.log('== =================================================');
     console.log('== Create entity');
-    entity = await agent.createEntity(guid);
+    entity = await agent.createEntity();
     console.log('== Created entity:', entity);
     assert.notEqual(entity, undefined, 'Entity create failed');
-    assert.equal(entity.guid, guid);
+    assert.notEqual(entity.guid, undefined, 'Entity missing GUID');
+    guid = entity.guid;
+    console.log('== GUID: ', guid);
     console.log('== =================================================');
     // Set Channel
     console.log('== =================================================');
@@ -190,14 +189,14 @@ describe('Signet Integration Tests', function () {
     // Positive test: agent2 should create an entity with XID set
     console.log('== =================================================');
     console.log('== Agent2 create entity with XID set');
-    guid2 = await sdk.genGUID();
-    console.log('== GUID2: ', guid2);
     xid5 =  Math.random().toString(36).substr(2, 5);
     console.log('== XID5: ', xid5);
-    a2Entity = await agent.createEntity(guid2, {'xid': ['dn','lola.com',xid5]});
+    a2Entity = await agent.createEntity({'xid': ['dn','lola.com',xid5]});
     console.log('== Agent2 created entity:', a2Entity);
     assert.notEqual(a2Entity, undefined, 'Agent2 entity create failed');
-    assert.equal(a2Entity.guid, guid2);
+    assert.notEqual(a2Entity.guid, undefined, 'Agent2 entity missing GUID');
+    guid2 = a2Entity.guid;
+    console.log('== GUID2: ', guid2);
     assert.equal(a2Entity.xid, 'dn:lola.com:'+xid5);
     console.log('== =================================================');
   });

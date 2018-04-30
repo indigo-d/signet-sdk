@@ -25,8 +25,8 @@ class SignetAPIClient {
 
   /**
    * Wrapper method for the http GET call.
-   * @param {url} URL The relative url to call i.e. /foo
-   * @param {params} params A hash of key value pairs for GET parameters
+   * @param {string} URL_PATH The relative url to call i.e. /foo
+   * @param {object} A dictionary of key value pairs for GET parameters
    * @return {promise} A promise object for the HTTP GET call
    */
   doGet(url_path, params) {
@@ -43,8 +43,9 @@ class SignetAPIClient {
 
   /**
    * Wrapper method for the http POST call
-   * @param {url} URL The relative url to call i.e. /foo
-   * @param {params} params A hash of key value pairs for POST parameters
+   * @param {string} URL The relative url to call i.e. /foo
+   * @param {object} A dictionary of key value pairs for POST parameters
+   * @param {object} A dictionary of HTTP header key value pairs (Optional)
    * @return {promise} A promise object for the HTTP POST call
    */
   doPost(url_path, params, headers={}) {
@@ -317,19 +318,21 @@ class SignetAgent {
 
   /**
    * <pre>
-   * Async method to create an entity which involves the following:
-   *   01) Generate Signet key set
-   *   02) Create an entity on the Signet API
-   *   03) Add entity key set to agent key chain
+   * Async method to create an entity which does the following:
+   *   01) Generate a GUID
+   *   02) Generate Signet key set
+   *   03) Create an entity on the Signet API
+   *   04) Add entity key set to agent key chain
+   *   05) Create a local SignetEntity object and set correct properties
    * Returns undefined for API call failure or any other run-time error.
    * </pre>
-   * @param {string} Required: GUID of the Entity
-   * @param {string} Optional: XID of the Entity
+   * @param {Object} Optional A dictionary of options. Set 'xid' to an array consisting of nstype, namespace, and XID string
    * @return {SignetEntity} A SignetEntity object or undefined
    */
-  async createEntity(guid,opts={}) {
+  async createEntity(opts={}) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting createEntity()');
+    var guid = uuid4.valid();
     console.log('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
@@ -366,9 +369,9 @@ class SignetAgent {
 
   /**
    * Method to contruct an XID object given nsType, nsName, and XID string
-   * @param {str} Type of the namespace
-   * @param {str} Name of the namespace
-   * @param {str} XID string
+   * @param {string} Type of the namespace
+   * @param {string} Name of the namespace
+   * @param {string} XID string
    */
   getXIDObject(nsType, nsName, xidStr) {
     return {
@@ -380,9 +383,9 @@ class SignetAgent {
 
   /**
    * Method to contruct a channel object given chType, version, and endpoint
-   * @param {str} Type of the channel
-   * @param {str} Version of the channel
-   * @param {str} Endpoint for the channel
+   * @param {string} Type of the channel
+   * @param {string} Version of the channel
+   * @param {string} Endpoint for the channel
    */
   getChannelObject(chType, version, endpoint) {
     return {
@@ -396,9 +399,9 @@ class SignetAgent {
    * Method to set an XID for an entity both locally and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the XID for
-   * @param {str} Type of the namespace
-   * @param {str} Name of the namespace
-   * @param {str} XID to set
+   * @param {string} Type of the namespace
+   * @param {string} Name of the namespace
+   * @param {string} XID to set
    * @return {boolean} true if successful or false for failure
    */
   async setXID(entity, nsType, nsName, xid) {
@@ -446,9 +449,9 @@ class SignetAgent {
    * Method to set a channel for an entity both locally and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the channel for
-   * @param {str} Type of the channel
-   * @param {str} Version of the channel
-   * @param {str} Endpoint for the channel
+   * @param {string} Type of the channel
+   * @param {string} Version of the channel
+   * @param {string} Endpoint for the channel
    * @return {boolean} true if successful or false for failure
    */
   async setChannel(entity, chType, chVersion, chEndPoint) {
@@ -653,7 +656,7 @@ class SignetSDK {
 
   /**
    * Set the Signet API endpoint for the SDK.
-   * @param {str} Endpoint for the Signet API
+   * @param {string} Endpoint for the Signet API
    */
   async initialize(signet_api_endpoint) {
     this.client = new SignetAPIClient(signet_api_endpoint);
@@ -693,7 +696,7 @@ class SignetSDK {
   /**
    * Async method to fetch an entity by GUID from the Signet API Service.
    * Returns undefined for API call failure or any other run-time error.
-   * @param {str} guid GUID of the Signet entity to fetch
+   * @param {string} guid GUID of the Signet entity to fetch
    * @return {SignetEntity} A SignetEntity object or undefined
    */
   async fetchEntity(guid) {
@@ -720,9 +723,9 @@ class SignetSDK {
   /**
    * Async method to fetch an entity by XID from the Signet API Service.
    * Returns undefined for API call failure or any other run-time error.
-   * @param {str} Type of the namespace
-   * @param {str} Name of the namespace
-   * @param {str} XID string
+   * @param {string} Type of the namespace
+   * @param {string} Name of the namespace
+   * @param {string} XID string
    * @return {SignetEntity} A SignetEntity object or undefined
    */
   async fetchEntityByXID(nsType, nsName, xidStr) {

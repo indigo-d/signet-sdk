@@ -105,7 +105,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line180">line 180</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line181">line 181</a>
     </li></ul></dd>
     
 
@@ -211,7 +211,7 @@ In such cases, these method calls would update the local state.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line215">line 215</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line216">line 216</a>
     </li></ul></dd>
     
 
@@ -421,7 +421,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line567">line 567</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line570">line 570</a>
     </li></ul></dd>
     
 
@@ -477,7 +477,7 @@ Returns false for API call failure or any other run-time error.
     
 
     
-    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">(Required:, Optional:)</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
+    <h4 class="name" id="createEntity"><span class="type-signature">(async) </span>createEntity<span class="signature">(Optional)</span><span class="type-signature"> &rarr; {SignetEntity}</span></h4>
     
 
     
@@ -486,10 +486,12 @@ Returns false for API call failure or any other run-time error.
 
 <div class="description">
     <pre>
-Async method to create an entity which involves the following:
-  01) Generate Signet key set
-  02) Create an entity on the Signet API
-  03) Add entity key set to agent key chain
+Async method to create an entity which does the following:
+  01) Generate a GUID
+  02) Generate Signet key set
+  03) Create an entity on the Signet API
+  04) Add entity key set to agent key chain
+  05) Create a local SignetEntity object and set correct properties
 Returns undefined for API call failure or any other run-time error.
 </pre>
 </div>
@@ -527,13 +529,13 @@ Returns undefined for API call failure or any other run-time error.
 
         <tr>
             
-                <td class="name"><code>Required:</code></td>
+                <td class="name"><code>Optional</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Object</span>
 
 
             
@@ -543,30 +545,7 @@ Returns undefined for API call failure or any other run-time error.
 
             
 
-            <td class="description last">GUID of the Entity</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>Optional:</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">XID of the Entity</td>
+            <td class="description last">A dictionary of options. Set 'xid' to an array consisting of nstype, namespace, and XID string</td>
         </tr>
 
     
@@ -607,7 +586,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line330">line 330</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line332">line 332</a>
     </li></ul></dd>
     
 
@@ -713,7 +692,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -736,7 +715,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -759,7 +738,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -810,7 +789,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line387">line 387</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line390">line 390</a>
     </li></ul></dd>
     
 
@@ -945,7 +924,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line267">line 267</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line268">line 268</a>
     </li></ul></dd>
     
 
@@ -1053,7 +1032,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line235">line 235</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line236">line 236</a>
     </li></ul></dd>
     
 
@@ -1161,7 +1140,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line223">line 223</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line224">line 224</a>
     </li></ul></dd>
     
 
@@ -1364,7 +1343,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line496">line 496</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line499">line 499</a>
     </li></ul></dd>
     
 
@@ -1614,7 +1593,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line288">line 288</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -1720,7 +1699,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -1743,7 +1722,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -1766,7 +1745,7 @@ Returns undefined for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -1817,7 +1796,7 @@ Returns undefined for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line373">line 373</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line376">line 376</a>
     </li></ul></dd>
     
 
@@ -1953,7 +1932,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line522">line 522</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line525">line 525</a>
     </li></ul></dd>
     
 
@@ -2083,7 +2062,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2106,7 +2085,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2129,7 +2108,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2180,7 +2159,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line454">line 454</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line457">line 457</a>
     </li></ul></dd>
     
 
@@ -2288,7 +2267,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line198">line 198</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line199">line 199</a>
     </li></ul></dd>
     
 
@@ -2396,7 +2375,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2419,7 +2398,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2442,7 +2421,7 @@ Returns false for API call failure or any other run-time error.
             <td class="type">
             
                 
-<span class="param-type">str</span>
+<span class="param-type">string</span>
 
 
             
@@ -2493,7 +2472,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line404">line 404</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line407">line 407</a>
     </li></ul></dd>
     
 
@@ -2673,7 +2652,7 @@ Returns false for API call failure or any other run-time error.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line249">line 249</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line250">line 250</a>
     </li></ul></dd>
     
 
@@ -2723,7 +2702,7 @@ Returns false for API call failure or any other run-time error.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Apr 27 2018 16:11:52 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Apr 30 2018 13:45:25 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
