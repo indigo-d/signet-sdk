@@ -7,7 +7,23 @@ const axios  = require('axios');
 const sodium = require('libsodium-wrappers');
 const base64url = require('base64url');
 const uuid4 = require('uuid4');
+var flaverr = require('flaverr');
 var sdk;
+
+/**
+ * Custom Error class for Signet Errors.
+ */
+class SignetError {
+  /**
+   * Constructor for the  Client
+   * @param {string} ERROR_CODE An error code string
+   * @param {string} ERROR_MESG An error message string
+   * @return {object} object of type SignetAPIClient
+   */
+  constructor(code, mesg) {
+    throw flaverr(code, new Error(mesg));
+  }
+}
 
 
 /**
@@ -197,13 +213,13 @@ class SignetAgent {
    * @params {string} Organization private key string ending in '='
    */
   setOrgKeys(pubKeyStr, privateKeyStr) {
-    if (!pubKeyStr) throw('Org Public Key is missing');
+    if (!pubKeyStr) new SignetError('E_PARAM_MISSING','Org Public Key is missing');
     if (pubKeyStr.substr(this.orgPublicKey.length - 1) != '=') {
-      throw('Org Public Key does not end with = character');
+      new SignetError('E_PARAM_INVALID', 'Org Public Key does not end with = character');
     }
-    if (!privateKeyStr) throw('Org Private Key is missing');
+    if (!privateKeyStr) new SignetError('E_PARAM_MISSING','Org Private Key is missing');
     if (privateKeyStr.substr(this.orgPrivateKey.length - 1) != '=') {
-      throw('Org Private Key does not end with = character');
+      new SignetError('E_PARAM_INVALID','Org Private Key does not end with = character');
     }
     this.orgPublicKey = pubKeyStr; // Must have trailing '='
     this.orgPrivateKey = privateKeyStr; // Must have trailing '='
@@ -267,8 +283,8 @@ class SignetAgent {
    */
   getOrgSignature (payLoad) {
     sdk.logr('-- getOrgSignature starting');
-    if (!this.orgPrivateKey) throw('Org private key not set');
-    if (!this.orgPublicKey) throw('Org public key not set');
+    if (!this.orgPrivateKey) new SignetError('E_ORG_KEY_NOT_SET','Org private key not set');
+    if (!this.orgPublicKey) new SignetError('E_ORG_KEY_NOT_SET','Org public key not set');
     let privateKeyArray = new Uint8Array(base64url.toBuffer(this.orgPrivateKey.slice(0,-1)));
     let orgSign = this.signObject(payLoad,privateKeyArray);
     sdk.logr('-- orgSign = ', orgSign);
@@ -353,7 +369,7 @@ class SignetAgent {
       };
       let resp = await sdk.client.doPost('/entity/', params, headers);
       sdk.logr('-- POST call response: ', resp.status, resp.data);
-      if (resp.status != 200) throw(resp.data);
+      if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       this.addEntityKeySetToKeyChain(guid, entityKeySet);
       sdk.logr('-- Added entity to key chain');
       entity = new SignetEntity(guid, verkey.getPublicKey());
@@ -433,7 +449,7 @@ class SignetAgent {
     try {
       let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params, headers);
       sdk.logr('-- POST call response: ', resp.status, resp.data);
-      if (resp.status != 200) throw(resp.data);
+      if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
@@ -477,7 +493,7 @@ class SignetAgent {
     try {
       let resp = await sdk.client.doPost('/entity/'+entity.guid+'/update', params);
       sdk.logr('-- POST call response: ', resp.status, resp.data);
-      if (resp.status != 200) throw(resp.data);
+      if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
@@ -502,7 +518,7 @@ class SignetAgent {
     sdk.logr('-- New Key Pair: ', newKeyPair.getPublicKey());
     sdk.logr('-- Old Key Pair: ', oldKeyPair.getPublicKey());
     sdk.logr('-- Previous Sign: ', prevSign);
-    if ((prevSign == undefined) || (prevSign == '')) throw('Invalid previous sign');
+    if ((prevSign == undefined) || (prevSign == '')) new SignetError('E_PARAM_INVALID','Invalid previous sign');
     let signedPayLoad = this.getSignedPayLoad(guid,newKeyPair,prevSign,[],[]);
     let signature = this.signObject(signedPayLoad, oldKeyPair.keypair.privateKey);
     sdk.logr('-- Signature: ', signature);
@@ -541,7 +557,7 @@ class SignetAgent {
     try {
       let resp = await sdk.client.doPost('/entity/'+entity.guid+'/rekey', params);
       sdk.logr('-- POST call response: ', resp.status, resp.data);
-      if (resp.status != 200) throw('API call to rekey failed');
+      if (resp.status != 200) new SignetError('E_SIGNET_API','API call to rekey failed');
       this.addEntityKeySetToKeyChain(entity.guid, newEntityKeySet);
       entity.refresh(resp.data);
       retVal = true;
