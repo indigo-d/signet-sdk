@@ -28,7 +28,7 @@ var orgPrivateKey = 'kBL96MxRGT3MbMnIw9-Q8ILsyjPEjY3ha30X_mc8-SCS7L4c6c3atLiMu6e
  * API and SDK.  We will be making SDK calls that will in turn call the
  * Signet API and then verify the results.  This requires the Signet API
  * to be running on localhost on a known port (see above for details).
-*/ 
+*/
 describe('Signet Integration Tests', function () {
   // Initialize the SDK i.e. set the Signet API endpoint
   // Note: This implies that there should be a Signet API server running

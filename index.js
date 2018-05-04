@@ -756,11 +756,11 @@ class SignetSDK {
     sdk.logr("-- nsName  = '" + nsName + "'");
     sdk.logr("-- xidStr  = '" + xidStr + "'");
     let xid = nsType + ':' + nsName + ':' + xidStr;
-    let params = {};
+    let params = {xid};
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await this.client.doGet('/entity/fetchByXID/'+xid,params);
+      let resp = await this.client.doGet('/entity/fetchByXID', {params});
       sdk.logr('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
       entity.refresh(resp.data);
