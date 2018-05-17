@@ -728,7 +728,7 @@ class SignetSDK {
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await this.client.doGet('/entity?guid='+guid,params);
+      let resp = await this.client.doGet('/entity/'+guid,params);
       sdk.logr('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
       entity.refresh(resp.data);
@@ -755,12 +755,12 @@ class SignetSDK {
     sdk.logr("-- nsType  = '" + nsType + "'");
     sdk.logr("-- nsName  = '" + nsName + "'");
     sdk.logr("-- xidStr  = '" + xidStr + "'");
-    let xid = encodeURIComponent(nsType + ':' + nsName + ':' + xidStr);
-    let params = {};
+    let xid = nsType + ':' + nsName + ':' + xidStr;
+    let params = {xid};
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await this.client.doGet('/entity?xid='+xid,params);
+      let resp = await this.client.doGet('/entity/fetchByXID', {params});
       sdk.logr('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
       entity.refresh(resp.data);

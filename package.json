@@ -30,12 +30,12 @@
     "async": "^2.6.0",
     "axios": "^0.18.0",
     "base64url": "^2.0.0",
-    "flaverr": "^1.9.2",
+    "flaverr": "^1.9.1",
     "keypair": "^1.0.1",
     "libsodium": "^0.7.3",
     "libsodium-wrappers": "^0.7.3",
     "request": "^2.85.0",
-    "rewire": "^4.0.1",
+    "rewire": "^4.0.0",
     "uuid4": "^1.0.0"
   }
 }

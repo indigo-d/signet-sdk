@@ -33,7 +33,7 @@ describe('Signet Integration Tests', function () {
   // Initialize the SDK i.e. set the Signet API endpoint
   // Note: This implies that there should be a Signet API server running
   //       and that the server is listening on port 1337 on localhost.
-  sdk.verbose = true; // Set this to true if you wish to see SDK logs
+  sdk.verbose = false; // Set this to true if you wish to see SDK logs
   sdk.initialize('http://localhost:1337');
   it('SDK Scenario 01: Create entity, set channel and fetch entity', async function () {
     console.log('== =================================================');
