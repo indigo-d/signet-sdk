@@ -32,7 +32,8 @@ class SignetError {
 class SignetAPIClient {
   /**
    * Constructor for the SignetAPI Client
-   * @param {string} URL The Signet API endpoint e.g. http://localhost:1337
+   * @param {string} URL The Signet API endpoint
+   * e.g. http://localhost:1337
    * @return {object} object of type SignetAPIClient
    */
   constructor(signet_api_endpoint) {
@@ -235,13 +236,17 @@ class SignetAgent {
    * @params {string} Organization private key string ending in '='
    */
   setOrgKeys(pubKeyStr, privateKeyStr) {
-    if (!pubKeyStr) new SignetError('E_PARAM_MISSING','Org Public Key is missing');
+    if (!pubKeyStr)
+      new SignetError('E_PARAM_MISSING','Org Public Key is missing');
     if (pubKeyStr.substr(this.orgPublicKey.length - 1) != '=') {
-      new SignetError('E_PARAM_INVALID', 'Org Public Key does not end with = character');
+      new SignetError('E_PARAM_INVALID',
+          'Org Public Key does not end with = character');
     }
-    if (!privateKeyStr) new SignetError('E_PARAM_MISSING','Org Private Key is missing');
+    if (!privateKeyStr)
+      new SignetError('E_PARAM_MISSING','Org Private Key is missing');
     if (privateKeyStr.substr(this.orgPrivateKey.length - 1) != '=') {
-      new SignetError('E_PARAM_INVALID','Org Private Key does not end with = character');
+      new SignetError('E_PARAM_INVALID',
+          'Org Private Key does not end with = character');
     }
     this.orgPublicKey = pubKeyStr; // Must have trailing '='
     this.orgPrivateKey = privateKeyStr; // Must have trailing '='
@@ -439,7 +444,8 @@ class SignetAgent {
   }
 
   /**
-   * Method to set an XID for an entity both locally and on the Signet API server.
+   * Method to set an XID for an entity both locally
+   * and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the XID for
    * @param {string} Type of the namespace
@@ -492,7 +498,8 @@ class SignetAgent {
   }
 
   /**
-   * Method to set a channel for an entity both locally and on the Signet API server.
+   * Method to set a channel for an entity both locally
+   * and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
    * @param {SignetEntity} entity Signet entity to set the channel for
    * @param {string} Type of the channel
@@ -522,7 +529,8 @@ class SignetAgent {
     sdk.logr('-- Params: ', params);
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPatch('/entity/update?guid='+entity.guid, params);
+      let resp = await sdk.client.doPatch(
+          '/entity/update?guid='+entity.guid, params);
       sdk.logr('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       entity.refresh(resp.data);
@@ -552,7 +560,8 @@ class SignetAgent {
     if ((prevSign == undefined) || (prevSign == ''))
       new SignetError('E_PARAM_INVALID','Invalid previous sign');
     let signedPayLoad = this.getSignedPayLoad(guid,newKeyPair,prevSign,[],[]);
-    let signature = this.signObject(signedPayLoad, oldKeyPair.keypair.privateKey);
+    let signature = 
+      this.signObject(signedPayLoad, oldKeyPair.keypair.privateKey);
     sdk.logr('-- Signature: ', signature);
     // Build the rekey payload object
     let rekeyPayLoad = {
@@ -673,7 +682,8 @@ class SignetEntity {
   /**
    * Method to take an entity JSON representation object and to set the fields
    *   of the local object to the representation object.
-   * @param {Object} A representation of an entity that is returned by a REST API call
+   * @param {Object} A representation of an entity that is returned
+   *   by a REST API call
    */
   refresh(entityRep) {
     sdk.logr('-- refresh starting');
