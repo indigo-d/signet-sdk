@@ -6,7 +6,7 @@ const async  = require('async');
 const axios  = require('axios');
 const sodium = require('libsodium-wrappers');
 const base64url = require('base64url');
-const uuid4 = require('uuid4');
+const uuid4 = require('uuid/v4');
 var flaverr = require('flaverr');
 var sdk;
 
@@ -380,7 +380,7 @@ class SignetAgent {
   async createEntity(opts={}) {
     sdk.logr('-- -------------------------------------------------');
     sdk.logr('-- Starting createEntity()');
-    var guid = uuid4.valid();
+    var guid = uuid4({"random": sodium.randombytes_buf(16)});
     sdk.logr('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
@@ -736,7 +736,7 @@ class SignetSDK {
    * @return {string} UUID4 UUID
    */
   async genGUID() {
-    return uuid4.valid();
+    return uuid4({"random": sodium.randombytes_buf(16)});
   }
 
   /**
