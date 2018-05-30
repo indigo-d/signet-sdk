@@ -15,8 +15,7 @@ var assert = require('assert');
 var api_endpoint = 'http://localhost:1337';
 
 // Needed to access non-exported classes
-const rewire = require('rewire');
-const sdk = rewire('../../index.js');
+const sdk = require("../../index.js");
 
 var agent, entity, guid, channel, xid1, xid2, xid3, xid4;
 var agent2, a2Entity, guid2, xid5;

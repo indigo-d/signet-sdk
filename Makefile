@@ -2,7 +2,7 @@ help:
 	@echo "make doc => Generates the doc files use jsdoc"
 	@echo "make it  => Run integration tests"
 	@echo "make ut  => Run unit tests"
-	@echo "make ut  => Run all tests"
+	@scho "make api => Run API tests"
 
 clean:
 	rm -rf doc
@@ -24,4 +24,8 @@ ut:
 	@mocha tests/unit
 	@echo "Finished Unit Tests"
 
-test: ut it
+api:
+	@echo "Starting API Tests"
+	@mocha tests/api
+	@echo "Finished API Tests"
+	
