@@ -11,14 +11,14 @@
 const assert = require('assert');
 const axios = require('axios');
 const sinon = require('sinon');
-const uuid4 = require('uuid4');
+const uuid4 = require("uuid/v4");
 const base64url = require('base64url');
 const sodium = require('libsodium-wrappers');
 const rewire = require('rewire');
 const sdk = rewire('../../index.js');
 const keyset = sdk.__get__('SignetKeySet');
 const api_endpoint = 'http://localhost:1337';
-var guid =  uuid4.valid();
+var guid =  uuid4();
 var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
 var keypair = undefined;
 var agent = undefined;
