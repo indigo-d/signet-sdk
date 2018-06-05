@@ -14,7 +14,6 @@ const sodium = require("libsodium-wrappers");
 const rewire = require("rewire");
 const sdk = rewire("../../index.js");
 const SignetKeySet = sdk.__get__("SignetKeySet")
-
 const orgSigningKey =
   'kBL96MxRGT3MbMnIw9-Q8ILsyjPEjY3ha30X_mc8-SCS7L4c6c3atLiMu6e65cycZT' +
   'gqs6lzq8kUUvY2GXJb0Q=';
@@ -28,18 +27,26 @@ describe("Signet API Tests", function() {
     sdk.verbose = true;
     sdk.initialize(api_endpoint);
     await sodium.ready;
-    xidNameA = Math.random().toString(36);
-    xidNameB = Math.random().toString(36);
   });
 
-  describe("POST /entity/", function() {
+  describe("POST, GET an /entity/", function() {
+
+    let agent;
+    let guidA;
+    let xidNameA;
+    let signedPayLoadJSONA
+
+    before(async function() {
+      agent = await sdk.createAgent();
+      guidA = await agent._genGUID();
+      xidNameA = Math.random().toString(36);
+    });
 
     it("Creates an entity without XID, can't create again with same GUID",
       async function() {
-        let guid = await sdk.genGUID();
+        let guid = await agent._genGUID();
         let entityKeySet = new SignetKeySet();
         let verkey = entityKeySet.ownershipKeyPair;
-        let agent = await sdk.createAgent();
         let signedPayLoad = agent.getSignedPayLoad(guid, verkey, '', [], []);
         let orgSign = agent.signObject(signedPayLoad, orgSigningKey);
         let signedPayLoadJSON = JSON.stringify(signedPayLoad);
@@ -60,20 +67,19 @@ describe("Signet API Tests", function() {
     it("Creates an entity with XID, can't create again with same XID," +
       " different GUID",
       async function() {
-        let guidA = await sdk.genGUID();
-        let guidB = await sdk.genGUID();
+        let guidB = await agent._genGUID();
         let entityKeySet = new SignetKeySet();
         let verkey = entityKeySet.ownershipKeyPair;
-        let agent = await sdk.createAgent();
         // XID
         let xidObj = {
           nstype: 'dn',
           ns: xidNamespace,
           name: xidNameA
         };
+        sdk.logr(xidNameA);
         let signedPayLoadA = agent.getSignedPayLoad(guidA, verkey, '', [xidObj], []);
         let orgSignA = agent.signObject(signedPayLoadA, orgSigningKey);
-        let signedPayLoadJSONA = JSON.stringify(signedPayLoadA);
+        signedPayLoadJSONA = JSON.stringify(signedPayLoadA);
         let paramsA = {
           signed_payload: signedPayLoadJSONA
         };
@@ -94,20 +100,12 @@ describe("Signet API Tests", function() {
           .send(paramsB);
           expect(resB.status).to.equal(400)
       });
-    //
-    //     it("Get entity A using guid", function() {
-    //       let url = "/entity?guid=" + guidA;
-    //       api.get(url).send()
-    //         .expect(200)
-    //         .end(
-    //           function(err, res) {
-    //             if (err) return done(err);
-    //             assert.notEqual(undefined, res.body);
-    //             assert.equal(guid, res.body.guid);
-    //             done();
-    //           }
-    //         );
-    // //      sdk.logr("body=", res.body)
-    //     })
+
+    it("Get entity created before with XID. It is the same object.",
+      async function() {
+          let url = "/entity?guid=" + guidA;
+          let res = await request.get(url).send();
+          expect(res.body.entityJSON).to.equal(signedPayLoadJSONA)
+        })
   });
 });

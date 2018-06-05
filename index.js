@@ -2,6 +2,9 @@
  * Signet SDK is a NodeJS module to act as an interface to the Signet API.
  * @module SignetSDK
  */
+
+"use strict";
+
 const async  = require('async');
 const axios  = require('axios');
 const sodium = require('libsodium-wrappers');
@@ -231,6 +234,15 @@ class SignetAgent {
   }
 
   /**
+   * Async method to generate a GUID that is a UUID4 format UUID.
+   * @return {string} UUID4 format UUID
+   * @private
+   */
+  async _genGUID() {
+    return uuid4({"random": sodium.randombytes_buf(16)});
+  }
+
+  /**
    * Set the Organization public and private key strings.
    * @params {string} Organization public key string ending in '='
    * @params {string} Organization private key string ending in '='
@@ -330,8 +342,8 @@ class SignetAgent {
    * @return {string} A signed canonical JSON representation of the entity
    */
   getSignedPayLoad(guid,signetKeyPair,prevSign,xids,channels) {
-    sdk.logr('-- Starting getSignedPayLoad');
-    sdk.logr('-- signetKeyPair: ', signetKeyPair);
+    //sdk.logr('-- Starting getSignedPayLoad');
+    //sdk.logr('-- signetKeyPair: ', signetKeyPair);
     // Build the payload object
     let payload = {
       data: {guid: guid},
@@ -348,14 +360,14 @@ class SignetAgent {
       if (channels.length > 0) { payload['data']['channels'] = channels; }
     }
     let signature = this.signObject(payload, signetKeyPair.getPrivateKey());
-    sdk.logr('-- Signature: ', signature);
+    //sdk.logr('-- Signature: ', signature);
     // Build the signed payload object
     let signedPayLoad = {
       payload: payload,
       sign: signature
     };
-    sdk.logr('-- signedPayLoad: ', signedPayLoad);
-    sdk.logr('-- Finished getSignedPayLoad');
+    //sdk.logr('-- signedPayLoad: ', signedPayLoad);
+    //sdk.logr('-- Finished getSignedPayLoad');
     return signedPayLoad;
   }
 
@@ -376,7 +388,8 @@ class SignetAgent {
   async createEntity(opts={}) {
     sdk.logr('-- -------------------------------------------------');
     sdk.logr('-- Starting createEntity()');
-    var guid = uuid4({"random": sodium.randombytes_buf(16)});
+    let guid = await this._genGUID();
+    //var guid = uuid4({"random": sodium.randombytes_buf(16)});
     sdk.logr('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
@@ -728,29 +741,21 @@ class SignetSDK {
   }
 
   /**
-   * Async method to generate a GUID that is a UUID4 format UUID.
-   * @return {string} UUID4 UUID
-   */
-  async genGUID() {
-    return uuid4({"random": sodium.randombytes_buf(16)});
-  }
-
-  /**
    * Async method to create a a Signetgent object.
    * Note: this does not call the Signet API.
    * @return {SignetAgent} A SignetAgent object
    */
   async createAgent() {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting createAgent()');
+    // sdk.logr('-- -------------------------------------------------');
+    // sdk.logr('-- Starting createAgent()');
     var agent = undefined;
     try {
       agent = new SignetAgent();
     } catch (err) {
-      sdk.logr('-- Error: ', err.toString());
+      // sdk.logr('-- Error: ', err.toString());
     }
-    sdk.logr('-- Finished createAgent()');
-    sdk.logr('-- -------------------------------------------------');
+    // sdk.logr('-- Finished createAgent()');
+    // sdk.logr('-- -------------------------------------------------');
     return agent;
   }
 
