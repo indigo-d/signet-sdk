@@ -14,11 +14,9 @@ const sinon = require('sinon');
 const uuid4 = require("uuid/v4");
 const base64url = require('base64url');
 const sodium = require('libsodium-wrappers');
-const rewire = require('rewire');
-const sdk = rewire('../../index.js');
-const keyset = sdk.__get__('SignetKeySet');
+const signet = require("../../index.js")
+//const keyset = require("../../signet_key_set.js");
 const api_endpoint = 'http://localhost:1337';
-var guid =  uuid4();
 var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
 var keypair = undefined;
 var agent = undefined;
@@ -35,9 +33,9 @@ describe('Signet SDK Tests', function () {
   it('SignetKeySet and SignetKeyPair tests', async function () {
     console.log('== =================================================');
     console.log('== SignetKeySet and SignetKeyPair tests starting');
-    let keySetA = new keyset();
+    let keySetA = new signet.KeySet();
     let keyPairA = keySetA.ownershipKeyPair;
-    let keySetB = new keyset();
+    let keySetB = new signet.KeySet();
     let keyPairB = keySetB.ownershipKeyPair;
     assert.notEqual(keySetA, keySetB);
     assert.notEqual(keyPairA, keyPairB);
@@ -60,31 +58,19 @@ describe('Signet SDK Tests', function () {
     console.log('== SignetKeySet and SignetKeyPair tests finished');
     console.log('== =================================================');
   });
-  // SDK initialization tests
-  it('SDK initialization tests', async function () {
-    console.log('== =================================================');
-    console.log('== SDK initialization tests starting');
-    assert.equal(sdk.constructor.name, 'SignetSDK');
-    assert.equal(sdk.version, '0.0.1');
-    await sdk.initialize(api_endpoint);
-    assert.equal(sdk.client.constructor.name, 'SignetAPIClient');
-    assert.equal(sdk.client.signet_api_endpoint, api_endpoint);
-    guid = await sdk.genGUID();
-    console.log('== SDK initialization tests finished');
-    console.log('== =================================================');
-  });
   // SDK Agent tests
   it('SDK agent tests', async function () {
     console.log('== =================================================');
     console.log('== SDK agent tests starting');
-    agent = await sdk.createAgent();
-    assert.equal(agent.constructor.name, 'SignetAgent');
+    let agent = await signet.createAgent();
+    let guid = await agent._genGUID();
+    assert.equal(agent.constructor.name, 'Agent');
     // ***************************************************************
     // Check the signature and verification of entity object
     // ***************************************************************
     console.log('== Testing signature:');
     console.log('== *************************************************');
-    let keySet = new keyset();
+    let keySet = new signet.KeySet();
     // The last two empty arrays refer to XIDs and Channels
     // These are empty for a createEntity call and hence they are empty in this call
     let signedPayLoad = agent.getSignedPayLoad(guid, keySet.ownershipKeyPair, '', [], []);
@@ -132,7 +118,7 @@ describe('Signet SDK Tests', function () {
     // ***************************************************************
     console.log('== Testing rekey:');
     console.log('== *************************************************');
-    let keySet2 = new keyset();
+    let keySet2 = new signet.KeySet();
     let rekeyPayLoad = agent.getRekeyPayLoad(
       guid,
       keySet2.ownershipKeyPair,

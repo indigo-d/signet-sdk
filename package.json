@@ -35,6 +35,7 @@
     "axios": "^0.18.0",
     "base64url": "^2.0.0",
     "flaverr": "^1.9.2",
+    "js-logger": "^1.4.1",
     "keypair": "^1.0.1",
     "libsodium": "^0.7.3",
     "libsodium-wrappers": "^0.7.3",

@@ -1,228 +1,122 @@
+"use strict";
+
 /**
  * Signet SDK is a NodeJS module to act as an interface to the Signet API.
  * @module SignetSDK
  */
 
-"use strict";
-
-const async  = require('async');
-const axios  = require('axios');
+const logger = require("js-logger");
 const sodium = require('libsodium-wrappers');
-const base64url = require('base64url');
 const uuid4 = require('uuid/v4');
-var flaverr = require('flaverr');
-var sdk;
+const base64url = require('base64url');
+
+const hlp = require("./signet_helpers");
+
+
+
+let Entity = require("./signet_entity");
+let APIClient = require("./signet_api_client");
+let KeySet = require("./signet_key_set");
+let SignetError = require("./signet_error");
+
+// This is the "state" of the Signet Interface Module
+// These are private variables to this module.
+let restClient = undefined;   // API endpoint
+let sodiumReady = false;  // libsodium has been initialized?
 
 /**
- * Custom Error class for Signet Errors.
+ * Set the Signet API endpoint for the SDK.
+ * @param {string} Endpoint for the Signet API
  */
-class SignetError {
-  /**
-   * Constructor for the  Client
-   * @param {string} ERROR_CODE An error code string
-   * @param {string} ERROR_MESG An error message string
-   * @return {object} object of type SignetAPIClient
-   */
-  constructor(code, mesg) {
-    throw flaverr(code, new Error(mesg));
+
+async function initialize(signet_api_endpoint) {
+  restClient = new APIClient(signet_api_endpoint);
+  if (!sodiumReady) {
+    // Initialize Sodium; Sodium methods won't work without this step!
+    await sodium.ready;
+    sodiumReady = true;
   }
 }
 
-
 /**
- * Class to wrap all calls to the Signet REST API.
+ * Async method to create a a Signetgent object.
+ * Note: this does not call the Signet API.
+ * @return {SignetAgent} A SignetAgent object
  */
-class SignetAPIClient {
-  /**
-   * Constructor for the SignetAPI Client
-   * @param {string} URL The Signet API endpoint
-   * e.g. http://localhost:1337
-   * @return {object} object of type SignetAPIClient
-   */
-  constructor(signet_api_endpoint) {
-    this.signet_api_endpoint = signet_api_endpoint;
-  }
-
-  /**
-   * Wrapper method for the http GET call.
-   * @param {string} URL_PATH The relative url to call i.e. /foo
-   * @param {object} A dictionary of key value pairs for GET parameters
-   * @return {promise} A promise object for the HTTP GET call
-   */
-  doGet(url_path, params) {
-    sdk.logr('-- ** **********************************************');
-    sdk.logr('-- ** Starting doGet()');
-    let url = this.signet_api_endpoint + url_path;
-    sdk.logr('-- ** Sending GET request to URL: ' + url);
-    sdk.logr('-- ** Params:', params);
-    sdk.logr('-- ** Finished doGet()');
-    sdk.logr('-- ** **********************************************');
-    // Note: the following method call returns a promise
-    return axios.get(url, params);
-  }
-
-  /**
-   * Wrapper method for the http POST call
-   * @param {string} URL The relative url to call i.e. /foo
-   * @param {object} A dictionary of key value pairs for POST parameters
-   * @param {object} A dictionary of HTTP header key value pairs (Optional)
-   * @return {promise} A promise object for the HTTP POST call
-   */
-  doPost(url_path, params, headers={}) {
-    sdk.logr('-- ** **********************************************');
-    sdk.logr('-- ** Starting doPost()');
-    let url = this.signet_api_endpoint + url_path;
-    sdk.logr('-- ** Sending POST request to URL: ' + url);
-    sdk.logr('-- ** Params: ', params);
-    let config = { headers: headers };
-    sdk.logr('-- ** Config: ', config);
-    sdk.logr('-- ** Finished doPost()');
-    sdk.logr('-- ** **********************************************');
-    // Note: the following method call returns a promise
-    return axios.post(url, params, config);
-  }
-
-  /**
-   * Wrapper method for the http PATCH call
-   * @param {string} URL The relative url to call i.e. /foo
-   * @param {object} A dictionary of key value pairs for PATCH parameters
-   * @param {object} A dictionary of HTTP header key value pairs (Optional)
-   * @return {promise} A promise object for the HTTP POST call
-   */
-  doPatch(url_path, params, headers={}) {
-    sdk.logr('-- ** **********************************************');
-    sdk.logr('-- ** Starting doPatch()');
-    let url = this.signet_api_endpoint + url_path;
-    sdk.logr('-- ** Sending PATCH request to URL: ' + url);
-    sdk.logr('-- ** Params: ', params);
-    let config = { headers: headers };
-    sdk.logr('-- ** Config: ', config);
-    sdk.logr('-- ** Finished doPatch()');
-    sdk.logr('-- ** **********************************************');
-    // Note: the following method call returns a promise
-    return axios.patch(url, params, config);
-  }
-
+async function createAgent() {
+  let agent = new Agent();
+  return agent;
 }
 
-
-/**
- * A container class for key pairs used by Signet.
- * Each key pair contains a public key and a private key.
- * The keypair is generated using the libsodium library.
- */
-class SignetKeyPair {
-  /**
-   * Constructor for the SignetAPI Client
-   * @return {object} object of type SignetKeyPair
-   */
-  constructor() {
-    Object.defineProperty(this, 'keypair', {
-      value: sodium.crypto_sign_keypair(),
-      writable: false
-    });
+/*
+* Async method to fetch an entity by GUID from the Signet API Service.
+* Returns undefined for API call failure or any other run - time error.*
+@param {
+  string
+}
+guid GUID of the Signet entity to fetch *
+  @return {
+    Entity
   }
+A Entity object or undefined
+*/
 
-  /**
-   * Utility method to convert a base64 URL encoded string
-   *   with a trailing '=' to an Uint8Array.
-   * Note: libsodium expects keys to be Uint8Array objects.
-   * @param {string} base64 URL encoded string with trailing '='
-   * @return {Uint8Array} Array of Uint8 integers
-   */
-  base64URLEncodedStringToArray(keyString) {
-    // Remove the trailing '=' character
-    let modKeyString = keyString.slice(0, -1);
-    return new Uint8Array(base64url.toBuffer(modKeyString));
+async function fetchEntity(guid) {
+  logger.debug('-- -------------------------------------------------');
+  logger.debug('-- Starting fetchEntity()');
+  logger.debug("--   guid = '" + guid + "'");
+  let params = {};
+  var entity = undefined;
+  // Make the REST API call and wait for it to finish
+  try {
+    let resp = await restClient.doGet('/entity?guid=' + guid, params);
+    logger.debug('-- GET call response: ', resp.status, resp.data);
+    entity = new Entity(resp.data.guid, resp.data.verkey);
+    entity.refresh(resp.data);
+  } catch (err) {
+    logger.error(err.toString());
   }
-
-  /**
-   * Method to set the key values for a public-private key pair
-   *   with base64 URL encoded strings with trailing '='s.
-   * Note: this method overwrites the original keys in this object!
-   * @param {string} public key: base64 URL encoded string with trailing '='
-   * @param {string} private key: base64 URL encoded string with trailing '='
-   */
-  importKeys(pubKeyString, privKeyString) {
-    this.keypair.publicKey = this.base64URLEncodedStringToArray(pubKeyString);
-    this.keypair.privateKey = this.base64URLEncodedStringToArray(privKeyString);
-  }
-
-  /**
-   * Get the base64 URL encoded string of the public key of the key pair.
-   * Add a trailing '=' sign to make it URL-safe.
-   * @return {string} base64 URL encoded string with trailing '='
-   */
-  getPublicKey() {
-    return base64url(this.keypair.publicKey) + '=';
-  }
-
-  /**
-   * Get the base64 encoded string of the private key of the key pair.
-   * Add a trailing '=' sign to make it URL-safe.
-   * @return {string} base64 URL encoded string with trailing '='
-   */
-  getPrivateKey() {
-    return base64url(this.keypair.privateKey) + '=';
-  }
-
-  /**
-   * Export a key pair to two base64 URL encoded strings.
-   * @return {string} base64 URL encoded string with trailing '='
-   */
-  exportKeys() {
-    return [ this.getPublicKey(), this.getPrivateKey() ];
-  }
+  logger.debug('-- Entity object to be returned: ', entity);
+  logger.debug('-- Finished fetchEntity()');
+  logger.debug('-- -------------------------------------------------');
+  return entity;
 }
 
-
 /**
- * A container class for key pairs.
- * <pre>
- * By default, a Signet key set has two kinds of keys:
- *
- *   - Management key: used to "manage" an entity
- *     - Management key is used to make changes to the entity
- *       and to transfer ownership of the entity to another agent
- *   - Encryption key: used to encrypt communications in a channel
- *
- * Additional key pairs may be added to a key set as needed.
- * </pre>
+ * Async method to fetch an entity by XID from the Signet API Service.
+ * Returns undefined for API call failure or any other run-time error.
+ * @param {string} Type of the namespace
+ * @param {string} Name of the namespace
+ * @param {string} XID string
+ * @return {Entity} A Entity object or undefined
  */
-class SignetKeySet {
-  /**
-   * Constructor to create a SignetKeySet object.
-   * @return {object} object of type SignetKeySet
-   */
-  constructor() {
-    this.ownershipKeyPair = new SignetKeyPair();
+async function fetchEntityByXID(nsType, nsName, xidStr) {
+  logger.debug('-- -------------------------------------------------');
+  logger.debug('-- Starting fetchEntityByXID()');
+  logger.debug("-- nsType  = '" + nsType + "'");
+  logger.debug("-- nsName  = '" + nsName + "'");
+  logger.debug("-- xidStr  = '" + xidStr + "'");
+  let xid = encodeURIComponent(nsType + ':' + nsName + ':' + xidStr);
+  let params = {};
+  var entity = undefined;
+  // Make the REST API call and wait for it to finish
+  try {
+    let resp = await restClient.doGet('/entity?xid=' + xid, params);
+    logger.debug('-- GET call response: ', resp.status, resp.data);
+    entity = new Entity(resp.data.guid, resp.data.verkey);
+    entity.refresh(resp.data);
+  } catch (err) {
+    logger.error(err.toString());
   }
-
-  /**
-   * Export the ownership key pair public key and private key
-   *   as base64 URL encoded strings.
-   *   See SignetKeyPair.exportKeys for details.
-   * @return {Array} Array with two SignetKey values
-   */
-  exportOwnershipKeyPair() {
-    return this.ownershipKeyPair.exportKeys();
-  }
+  logger.debug('-- Entity object to be returned: ', entity);
+  logger.debug('-- Finished fetchEntityByXID()');
+  logger.debug('-- -------------------------------------------------');
+  return entity;
 }
 
-
-/**
- * A proxy class for a Signet Agent.
- * <pre>
- * Objects of this class would contain agent attributes such as:
- *   - keyChain => A hash with key as guid and value as SignetKeySet object
- *
- * Certain method calls to this object may trigger a call to the Signet API.
- * In such cases, these method calls would update the local state.
- * </pre>
- */
-class SignetAgent {
+class Agent {
   /**
-   * Constructor to create a SignetEntity object.
+   * Constructor to create a SignetAgent object.
    * @return {object} object of type SignetAgent
    */
   constructor() {
@@ -274,7 +168,7 @@ class SignetAgent {
 
   /**
    * Gets the ownership key set of the entity with the given GUID.
-   * @return {SignetKeySet} The ownership key set or undefined if not found
+   * @return {KeySet} The ownership key set or undefined if not found
    */
   getOwnershipKeySet(guid) {
     if ( !(guid in this.keyChain) ) {
@@ -307,10 +201,10 @@ class SignetAgent {
     // Get a JSON string representation of the object
     let plainTxt = JSON.stringify(objectToBeSigned);
     // Sign the JSON string representation of the object
-    let signKeyArray = convertKeyBase64url2KeyArray(signKey)
+    let signKeyArray = hlp.convertKeyBase64url2KeyArray(signKey)
     let signArray = sodium.crypto_sign_detached(plainTxt, signKeyArray);
     // Get a base64url encoded version of it with a '=' appended
-    let signature = convertKeyArray2KeyBase64url(signArray);
+    let signature = hlp.convertKeyArray2KeyBase64url(signArray);
     return signature;
   }
 
@@ -320,14 +214,14 @@ class SignetAgent {
    * @return {string} A signed canonical JSON representation of the object
    */
   getOrgSignature (payLoad) {
-    sdk.logr('-- getOrgSignature starting');
+    logger.debug('-- getOrgSignature starting');
     if (!this.orgPrivateKey)
       new SignetError('E_ORG_KEY_NOT_SET','Org private key not set');
     if (!this.orgPublicKey)
       new SignetError('E_ORG_KEY_NOT_SET','Org public key not set');
     let orgSign = this.signObject(payLoad,this.orgPrivateKey);
-    sdk.logr('-- orgSign = ', orgSign);
-    sdk.logr('-- getOrgSignature finished');
+    logger.debug('-- orgSign = ', orgSign);
+    logger.debug('-- getOrgSignature finished');
     return orgSign;
   }
 
@@ -342,8 +236,8 @@ class SignetAgent {
    * @return {string} A signed canonical JSON representation of the entity
    */
   getSignedPayLoad(guid,signetKeyPair,prevSign,xids,channels) {
-    //sdk.logr('-- Starting getSignedPayLoad');
-    //sdk.logr('-- signetKeyPair: ', signetKeyPair);
+    //logger.debug('-- Starting getSignedPayLoad');
+    //logger.debug('-- signetKeyPair: ', signetKeyPair);
     // Build the payload object
     let payload = {
       data: {guid: guid},
@@ -360,14 +254,14 @@ class SignetAgent {
       if (channels.length > 0) { payload['data']['channels'] = channels; }
     }
     let signature = this.signObject(payload, signetKeyPair.getPrivateKey());
-    //sdk.logr('-- Signature: ', signature);
+    //logger.debug('-- Signature: ', signature);
     // Build the signed payload object
     let signedPayLoad = {
       payload: payload,
       sign: signature
     };
-    //sdk.logr('-- signedPayLoad: ', signedPayLoad);
-    //sdk.logr('-- Finished getSignedPayLoad');
+    //logger.debug('-- signedPayLoad: ', signedPayLoad);
+    //logger.debug('-- Finished getSignedPayLoad');
     return signedPayLoad;
   }
 
@@ -378,23 +272,23 @@ class SignetAgent {
    *   02) Generate Signet key set
    *   03) Create an entity on the Signet API
    *   04) Add entity key set to agent key chain
-   *   05) Create a local SignetEntity object and set correct properties
+   *   05) Create a local Entity object and set correct properties
    * Returns undefined for API call failure or any other run-time error.
    * </pre>
    * @param {Object} Optional A dictionary of options.
    * Set 'xid' to an array consisting of nstype, namespace, and XID string
-   * @return {SignetEntity} A SignetEntity object or undefined
+   * @return {Entity} A Entity object or undefined
    */
   async createEntity(opts={}) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting createEntity()');
+    logger.debug('-- -------------------------------------------------');
+    logger.debug('-- Starting createEntity()');
     let guid = await this._genGUID();
     //var guid = uuid4({"random": sodium.randombytes_buf(16)});
-    sdk.logr('-- guid = ', guid);
+    logger.debug('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let entityKeySet = new SignetKeySet();
+      let entityKeySet = new KeySet();
       let verkey = entityKeySet.ownershipKeyPair;
       let xidArray = [];
       if (opts['xid']) {
@@ -408,19 +302,19 @@ class SignetAgent {
         'X-Org-Key': this.orgPublicKey,
         'X-Org-Sign': orgSign
       };
-      let resp = await sdk.client.doPost('/entity/', params, headers);
-      sdk.logr('-- POST call response: ', resp.status, resp.data);
+      let resp = await restClient.doPost('/entity/', params, headers);
+      logger.debug('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       this.addEntityKeySetToKeyChain(guid, entityKeySet);
-      sdk.logr('-- Added entity to key chain');
-      entity = new SignetEntity(guid, verkey.getPublicKey());
+      logger.debug('-- Added entity to key chain');
+      entity = new Entity(guid, verkey.getPublicKey());
       entity.refresh(resp.data);
     } catch (err) {
-      sdk.logr('-- Error: ', err.toString());
+      logger.debug('-- Error: ', err.toString());
     }
-    sdk.logr('-- Entity object to be returned: ', entity);
-    sdk.logr('-- Finished createEntity()');
-    sdk.logr('-- -------------------------------------------------');
+    logger.debug('-- Entity object to be returned: ', entity);
+    logger.debug('-- Finished createEntity()');
+    logger.debug('-- -------------------------------------------------');
     return entity;
   }
 
@@ -456,19 +350,19 @@ class SignetAgent {
    * Method to set an XID for an entity both locally
    * and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to set the XID for
+   * @param {Entity} entity Signet entity to set the XID for
    * @param {string} Type of the namespace
    * @param {string} Name of the namespace
    * @param {string} XID to set
    * @return {boolean} true if successful or false for failure
    */
   async setXID(entity, nsType, nsName, xid) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting setXID()');
-    sdk.logr("-- entity guid = '" + entity.guid + "'");
-    sdk.logr("-- nsType  = '" + nsType + "'");
-    sdk.logr("-- nsName  = '" + nsName + "'");
-    sdk.logr("-- xid  = '" + xid + "'");
+    logger.debug('-- -------------------------------------------------');
+    logger.debug('-- Starting setXID()');
+    logger.debug("-- entity guid = '" + entity.guid + "'");
+    logger.debug("-- nsType  = '" + nsType + "'");
+    logger.debug("-- nsName  = '" + nsName + "'");
+    logger.debug("-- xid  = '" + xid + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
     let xidObj = this.getXIDObject(nsType, nsName, xid);
     let channelArray = [];
@@ -481,28 +375,28 @@ class SignetAgent {
         entity.guid,verkey,entity.prevSign,[xidObj],channelArray);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
-    sdk.logr('-- Params: ', params);
+    logger.debug('-- Params: ', params);
     let orgSign = this.getOrgSignature(signedPayLoad);
     let headers = {
       'X-Org-Key': this.orgPublicKey,
       'X-Org-Sign': orgSign
     };
-    sdk.logr('-- Headers: ', headers);
+    logger.debug('-- Headers: ', headers);
     var retVal = false;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPatch('/entity/update?guid='+entity.guid,
+      let resp = await restClient.doPatch('/entity/update?guid='+entity.guid,
           params, headers);
-      sdk.logr('-- PATCH call response: ', resp.status, resp.data);
+      logger.debug('-- PATCH call response: ', resp.status, resp.data);
       if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
-      sdk.logr('-- Error: ', err.response.data);
+      logger.debug('-- Error: ', err.response.data);
     }
-    sdk.logr('-- Finished setXID()');
-    sdk.logr('-- Returning: ', retVal);
-    sdk.logr('-- -------------------------------------------------');
+    logger.debug('-- Finished setXID()');
+    logger.debug('-- Returning: ', retVal);
+    logger.debug('-- -------------------------------------------------');
     return retVal;
   }
 
@@ -510,7 +404,7 @@ class SignetAgent {
    * Method to set a channel for an entity both locally
    * and on the Signet API server.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to set the channel for
+   * @param {Entity} entity Signet entity to set the channel for
    * @param {string} Type of the channel
    * @param {string} Version of the channel
    * @param {string} Endpoint for the channel
@@ -518,12 +412,12 @@ class SignetAgent {
    */
   async setChannel(entity, chType, chVersion, chEndPoint) {
     var retVal = false;
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting setChannel()');
-    sdk.logr("-- entity guid = '" + entity.guid + "'");
-    sdk.logr("-- chType = '" + chType + "'");
-    sdk.logr("-- chVersion = '" + chVersion + "'");
-    sdk.logr("-- chEndPoint = '" + chEndPoint + "'");
+    logger.debug('-- -------------------------------------------------');
+    logger.debug('-- Starting setChannel()');
+    logger.debug("-- entity guid = '" + entity.guid + "'");
+    logger.debug("-- chType = '" + chType + "'");
+    logger.debug("-- chVersion = '" + chVersion + "'");
+    logger.debug("-- chEndPoint = '" + chEndPoint + "'");
     let verkey = this.getOwnershipKeyPair(entity.guid);
     let xidArray = [];
     if (entity.xid) {
@@ -535,21 +429,21 @@ class SignetAgent {
         entity.guid,verkey,entity.prevSign,xidArray,[channelObj]);
     let signedPayLoadJSON = JSON.stringify(signedPayLoad);
     let params = { signed_payload: signedPayLoadJSON };
-    sdk.logr('-- Params: ', params);
+    logger.debug('-- Params: ', params);
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPatch(
+      let resp = await restClient.doPatch(
           '/entity/update?guid='+entity.guid, params);
-      sdk.logr('-- POST call response: ', resp.status, resp.data);
+      logger.debug('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200) new SignetError('E_SIGNET_API',resp.data);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
-      sdk.logr('-- Error: ', err.response.data);
+      logger.debug('-- Error: ', err.response.data);
     }
-    sdk.logr('-- Finished setChannel()');
-    sdk.logr('-- Returning: ', retVal);
-    sdk.logr('-- -------------------------------------------------');
+    logger.debug('-- Finished setChannel()');
+    logger.debug('-- Returning: ', retVal);
+    logger.debug('-- -------------------------------------------------');
     return retVal;
   }
 
@@ -561,63 +455,63 @@ class SignetAgent {
    * @return {string} A signed rekey payload
    */
   getRekeyPayLoad(guid, newKeyPair, oldKeyPair, prevSign) {
-    sdk.logr('-- Starting getRekeyPayLoad');
-    sdk.logr('-- GUID: ', guid);
-    sdk.logr('-- New Key Pair: ', newKeyPair.getPublicKey());
-    sdk.logr('-- Old Key Pair: ', oldKeyPair.getPublicKey());
-    sdk.logr('-- Previous Sign: ', prevSign);
+    logger.debug('-- Starting getRekeyPayLoad');
+    logger.debug('-- GUID: ', guid);
+    logger.debug('-- New Key Pair: ', newKeyPair.getPublicKey());
+    logger.debug('-- Old Key Pair: ', oldKeyPair.getPublicKey());
+    logger.debug('-- Previous Sign: ', prevSign);
     if ((prevSign == undefined) || (prevSign == ''))
       new SignetError('E_PARAM_INVALID','Invalid previous sign');
     let signedPayLoad = this.getSignedPayLoad(guid,newKeyPair,prevSign,[],[]);
     let signature =
       this.signObject(signedPayLoad, oldKeyPair.getPrivateKey());
-    sdk.logr('-- Signature: ', signature);
+    logger.debug('-- Signature: ', signature);
     // Build the rekey payload object
     let rekeyPayLoad = {
       signed_payload: signedPayLoad,
       old_sign: signature
     };
-    sdk.logr('-- rekeyPayLoad: ', rekeyPayLoad);
-    sdk.logr('-- Finished getRekeyPayLoad');
+    logger.debug('-- rekeyPayLoad: ', rekeyPayLoad);
+    logger.debug('-- Finished getRekeyPayLoad');
     return rekeyPayLoad;
   }
 
   /**
    * Method to rekey an existing entity that is already managed by this agent.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to rekey
+   * @param {Entity} entity Signet entity to rekey
    * @return {boolean} Boolean value indicating success
    */
   async rekey(entity) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting rekey()');
-    sdk.logr("--   entity guid = '" + entity.guid + "'");
-    sdk.logr(entity);
+    logger.debug('-- -------------------------------------------------');
+    logger.debug('-- Starting rekey()');
+    logger.debug("--   entity guid = '" + entity.guid + "'");
+    logger.debug(entity);
     let oldKeyPair = this.getOwnershipKeyPair(entity.guid);
-    let newEntityKeySet = new SignetKeySet();
+    let newEntityKeySet = new KeySet();
     let newKeyPair = newEntityKeySet.ownershipKeyPair;
     let rekeyPayLoad = this.getRekeyPayLoad(
       entity.guid, newKeyPair, oldKeyPair, entity.prevSign
     );
     let rekeyPayLoadJSON = JSON.stringify(rekeyPayLoad);
     let params = { rekey_payload: rekeyPayLoadJSON };
-    sdk.logr('-- Params: ', params);
+    logger.debug('-- Params: ', params);
     var retVal = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await sdk.client.doPatch(
+      let resp = await restClient.doPatch(
           '/entity/rekey?guid='+entity.guid, params);
-      sdk.logr('-- POST call response: ', resp.status, resp.data);
+      logger.debug('-- POST call response: ', resp.status, resp.data);
       if (resp.status != 200)
         new SignetError('E_SIGNET_API','API call to rekey failed');
       this.addEntityKeySetToKeyChain(entity.guid, newEntityKeySet);
       entity.refresh(resp.data);
       retVal = true;
     } catch (err) {
-      sdk.logr('-- Error: ', err);
+      logger.debug('-- Error: ', err);
     }
-    sdk.logr('-- Finished rekey()');
-    sdk.logr('-- -------------------------------------------------');
+    logger.debug('-- Finished rekey()');
+    logger.debug('-- -------------------------------------------------');
     return retVal;
   }
 
@@ -630,208 +524,33 @@ class SignetAgent {
    *   the entity if it wishes to establish exclusive ownership of the
    *   entity.  Once re-keyed, only this agent can modify the entity.
    * Returns false for API call failure or any other run-time error.
-   * @param {SignetEntity} entity Signet entity to assign to this agent
+   * @param {Entity} entity Signet entity to assign to this agent
    * @param {string} String representation of a SignetKeyPair public key
    * @param {string} String representation of a SignetKeyPair private key
    * @return {boolean} Boolean value indicating success
    */
   async assignEntity(entity, publicKeyString, privateKeyString) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting assignEntity()');
-    sdk.logr("-- Entity object: ", entity);
-    sdk.logr("-- Entity guid = '" + entity.guid + "'");
-    sdk.logr("-- publicKeyString = '" + publicKeyString + "'");
-    sdk.logr("-- privateKeyString = '" + privateKeyString + "'");
+    logger.debug('-- -------------------------------------------------');
+    logger.debug('-- Starting assignEntity()');
+    logger.debug("-- Entity object: ", entity);
+    logger.debug("-- Entity guid = '" + entity.guid + "'");
+    logger.debug("-- publicKeyString = '" + publicKeyString + "'");
+    logger.debug("-- privateKeyString = '" + privateKeyString + "'");
     var retVal = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let entityKeySet = new SignetKeySet();
+      let entityKeySet = new KeySet();
       // Need to import the given key strings to this new key set
       entityKeySet.ownershipKeyPair.importKeys(publicKeyString,privateKeyString);
       this.addEntityKeySetToKeyChain(entity.guid, entityKeySet);
       retVal = true;
     } catch (err) {
-      sdk.logr('-- Error: ', err);
+      logger.debug('-- Error: ', err);
     }
-    sdk.logr('-- Finished assignEntity()');
-    sdk.logr('-- -------------------------------------------------');
+    logger.debug('-- Finished assignEntity()');
+    logger.debug('-- -------------------------------------------------');
     return retVal;
   }
 }
 
-
-/**
- * A proxy class for a Signet Entity.
- * <pre>
- * Objects of this class would contain entity attributes such as:
- *   - guid      => GUID of the Signet Entity
- *   - xid       => XID of the Signet Entity
- *   - verkey    => Verification key (Management key) of the Signet Entity
- *   - prevSign  => Previous Signature of entity
- *
- * Certain method calls to this object may trigger a call to the Signet API.
- * In such cases, these method calls would update the local state.
- * </pre>
- */
-class SignetEntity {
-  /**
-   * Constructor to create a SignetEntity object.
-   * @return {object} object of type SignetEntity
-   */
-  constructor(guid, verkey) {
-    this.guid = guid;
-    this.verkey = verkey;
-    this.xid = undefined;
-    this.channel = undefined;
-    this.prevSign = undefined;
-    this.signedAt = undefined;
-    this.entityJSON = undefined;
-  }
-
-  /**
-   * Method to take an entity JSON representation object and to set the fields
-   *   of the local object to the representation object.
-   * @param {Object} A representation of an entity that is returned
-   *   by a REST API call
-   */
-  refresh(entityRep) {
-    sdk.logr('-- refresh starting');
-    let entityObj = JSON.parse(entityRep.entityJSON);
-    this.verkey = entityRep.verkey;
-    this.xid = entityRep.xid;
-    this.channel = entityRep.channel;
-    this.prevSign = entityRep.signature;
-    this.signedAt = entityRep.signedAt;
-    this.entityJSON = entityRep.entityJSON;
-    sdk.logr('-- Entity object refreshed: ', this);
-    sdk.logr('-- refresh finished');
-  }
-}
-
-
-/**
- * The main SDK class that implements the Signet SDK.
- */
-class SignetSDK {
-  /**
-   * Constructor to create a SignetSDK object.
-   * @return {object} object of type SignetSDK
-   */
-  constructor(signet_api_endpoint) {
-    this.version = "0.0.1";
-    this.client = undefined;
-    this.sodiumReady = false;
-    this.verbose = true;
-  }
-
-  logr(...args) {
-    if (this.verbose) console.log(...args);
-  }
-
-  /**
-   * Set the Signet API endpoint for the SDK.
-   * @param {string} Endpoint for the Signet API
-   */
-  async initialize(signet_api_endpoint) {
-    this.client = new SignetAPIClient(signet_api_endpoint);
-    if (!this.sodiumReady) {
-      // Initialize Sodium; Sodium methods won't work without this step!
-      await sodium.ready;
-    }
-  }
-
-  /**
-   * Async method to create a a Signetgent object.
-   * Note: this does not call the Signet API.
-   * @return {SignetAgent} A SignetAgent object
-   */
-  async createAgent() {
-    // sdk.logr('-- -------------------------------------------------');
-    // sdk.logr('-- Starting createAgent()');
-    var agent = undefined;
-    try {
-      agent = new SignetAgent();
-    } catch (err) {
-      // sdk.logr('-- Error: ', err.toString());
-    }
-    // sdk.logr('-- Finished createAgent()');
-    // sdk.logr('-- -------------------------------------------------');
-    return agent;
-  }
-
-  /**
-   * Async method to fetch an entity by GUID from the Signet API Service.
-   * Returns undefined for API call failure or any other run-time error.
-   * @param {string} guid GUID of the Signet entity to fetch
-   * @return {SignetEntity} A SignetEntity object or undefined
-   */
-  async fetchEntity(guid) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting fetchEntity()');
-    sdk.logr("--   guid = '" + guid + "'");
-    let params = {};
-    var entity = undefined;
-    // Make the REST API call and wait for it to finish
-    try {
-      let resp = await this.client.doGet('/entity?guid='+guid,params);
-      sdk.logr('-- GET call response: ', resp.status, resp.data);
-      entity = new SignetEntity(resp.data.guid, resp.data.verkey);
-      entity.refresh(resp.data);
-    } catch (err) {
-      sdk.logr(err.toString());
-    }
-    sdk.logr('-- Entity object to be returned: ', entity);
-    sdk.logr('-- Finished fetchEntity()');
-    sdk.logr('-- -------------------------------------------------');
-    return entity;
-  }
-
-  /**
-   * Async method to fetch an entity by XID from the Signet API Service.
-   * Returns undefined for API call failure or any other run-time error.
-   * @param {string} Type of the namespace
-   * @param {string} Name of the namespace
-   * @param {string} XID string
-   * @return {SignetEntity} A SignetEntity object or undefined
-   */
-  async fetchEntityByXID(nsType, nsName, xidStr) {
-    sdk.logr('-- -------------------------------------------------');
-    sdk.logr('-- Starting fetchEntityByXID()');
-    sdk.logr("-- nsType  = '" + nsType + "'");
-    sdk.logr("-- nsName  = '" + nsName + "'");
-    sdk.logr("-- xidStr  = '" + xidStr + "'");
-    let xid = encodeURIComponent(nsType + ':' + nsName + ':' + xidStr);
-    let params = {};
-    var entity = undefined;
-    // Make the REST API call and wait for it to finish
-    try {
-      let resp = await this.client.doGet('/entity?xid='+xid,params);
-      sdk.logr('-- GET call response: ', resp.status, resp.data);
-      entity = new SignetEntity(resp.data.guid, resp.data.verkey);
-      entity.refresh(resp.data);
-    } catch (err) {
-      sdk.logr(err.toString());
-    }
-    sdk.logr('-- Entity object to be returned: ', entity);
-    sdk.logr('-- Finished fetchEntityByXID()');
-    sdk.logr('-- -------------------------------------------------');
-    return entity;
-  }
-}
-
-// Key conversion functions
-// ------------------------
-
-// Convert key array (used by libsodium) to base64url key
-function convertKeyArray2KeyBase64url(keyA) {
-  return base64url(keyA)+"=";
-}
-
-// Convert base64url key to key array (used by libsodium)
-function convertKeyBase64url2KeyArray(keyB) {
-  return new Uint8Array(base64url.toBuffer(keyB.slice(0,-1)));
-}
-
-
-sdk = new SignetSDK();
-module.exports = sdk;
+module.exports = {initialize, fetchEntity, createAgent, fetchEntityByXID, KeySet, Agent};
