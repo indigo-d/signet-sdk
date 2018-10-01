@@ -19,11 +19,11 @@
 
     <h1 class="page-title">Source: index.js</h1>
 
-    
 
 
 
-    
+
+
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
@@ -360,7 +360,7 @@ class SignetAgent {
   async createEntity(opts={}) {
     console.log('-- -------------------------------------------------');
     console.log('-- Starting createEntity()');
-    var guid = uuid4.valid();
+    var guid = uuid4();
     console.log('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
@@ -698,8 +698,16 @@ class SignetSDK {
    * Async method to generate a GUID that is a UUID4 format UUID.
    * @return {string} UUID4 UUID
    */
-  async genGUID() {
-    return uuid4.valid();
+  genGUID() {
+   return new Promise(function(resolve, reject) {
+     uuid4(function(err, uuid) {
+       if (err) {
+         reject(err);
+       } else {
+         resolve(uuid);
+       }
+     });
+   });
   }
 
   /**

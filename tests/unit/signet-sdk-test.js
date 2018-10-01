@@ -18,8 +18,8 @@ const rewire = require('rewire');
 const sdk = rewire('../../index.js');
 const keyset = sdk.__get__('SignetKeySet');
 const api_endpoint = 'http://localhost:1337';
-var guid =  uuid4.valid();
-var xid =  'xid-' + Math.random().toString(36).substr(2, 5);
+var guid = uuid4();
+var xid = 'xid-' + Math.random().toString(36).substr(2, 5);
 var keypair = undefined;
 var agent = undefined;
 var entity = undefined;
@@ -89,6 +89,7 @@ describe('Signet SDK Tests', function () {
     // These are empty for a createEntity call and hence they are empty in this call
     let signedPayLoad = agent.getSignedPayLoad(guid, keySet.ownershipKeyPair, '', [], []);
     console.log('== signedPayLoad returned by getSignedPayLoad: ', signedPayLoad);
+    assert(uuid4.valid(guid));
     assert.equal(
       signedPayLoad['payload']['data']['guid'],
       guid,

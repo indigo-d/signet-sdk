@@ -98,7 +98,7 @@ class SignetAPIClient {
     // Note: the following method call returns a promise
     return axios.patch(url, params, config);
   }
-  
+
 }
 
 
@@ -375,7 +375,7 @@ class SignetAgent {
   async createEntity(opts={}) {
     sdk.logr('-- -------------------------------------------------');
     sdk.logr('-- Starting createEntity()');
-    var guid = uuid4.valid();
+    var guid = uuid4();
     sdk.logr('-- guid = ', guid);
     var entity = undefined;
     // Make the REST API call and wait for it to finish
@@ -723,10 +723,18 @@ class SignetSDK {
 
   /**
    * Async method to generate a GUID that is a UUID4 format UUID.
-   * @return {string} UUID4 UUID
+   * @return {Promise} a Promise that will resolve with a UUID
    */
-  async genGUID() {
-    return uuid4.valid();
+  genGUID() {
+    return new Promise(function(resolve, reject) {
+      uuid4(function(err, uuid) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(uuid);
+        }
+      });
+    });
   }
 
   /**
