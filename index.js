@@ -83,7 +83,7 @@ class SignetAPIClient {
    * @param {string} URL The relative url to call i.e. /foo
    * @param {object} A dictionary of key value pairs for PATCH parameters
    * @param {object} A dictionary of HTTP header key value pairs (Optional)
-   * @return {promise} A promise object for the HTTP POST call
+   * @return {promise} A promise object for the HTTP PATCH call
    */
   doPatch(url_path, params, headers={}) {
     sdk.logr('-- ** **********************************************');
@@ -97,6 +97,27 @@ class SignetAPIClient {
     sdk.logr('-- ** **********************************************');
     // Note: the following method call returns a promise
     return axios.patch(url, params, config);
+  }
+
+  /**
+   * Wrapper method for the http DELETE call
+   * @param {string} URL The relative url to call i.e. /foo
+   * @param {object} A dictionary of key value pairs for DELETE parameters
+   * @param {object} A dictionary of HTTP header key value pairs (Optional)
+   * @return {promise} A promise object for the HTTP DELETE call
+   */
+  doDelete(url_path, params, headers={}) {
+    sdk.logr('-- ** **********************************************');
+    sdk.logr('-- ** Starting doDelete()');
+    let url = this.signet_api_endpoint + url_path;
+    sdk.logr('-- ** Sending DELETE request to URL: ' + url);
+    sdk.logr('-- ** Params: ', params);
+    let config = { headers: headers };
+    sdk.logr('-- ** Config: ', config);
+    sdk.logr('-- ** Finished doDelete()');
+    sdk.logr('-- ** **********************************************');
+    // Note: the following method call returns a promise
+    return axios.delete(url, {data: params});
   }
 
 }
@@ -408,6 +429,35 @@ class SignetAgent {
     sdk.logr('-- Finished createEntity()');
     sdk.logr('-- -------------------------------------------------');
     return entity;
+  }
+
+  /**
+   * <pre>
+   * Async method to remove an entity:
+   * </pre>
+   * @param {Object} Optional A dictionary of options.
+   * Set 'xid' to an array consisting of nstype, namespace, and XID string
+   * @return {SignetEntity} A SignetEntity object or undefined
+   */
+  async removeEntity(entity, opts={}) {
+    sdk.logr('-- -------------------------------------------------');
+    sdk.logr('-- Starting removeEntity()');
+    sdk.logr("-- entity guid = '" + entity.guid + "'");
+
+    let params = { signed_payload: entity.entityJSON };
+    sdk.logr('-- Params: ', params);
+
+
+    try {
+      const resp = await sdk.client.doDelete('/entity?guid='+entity.guid, params, {});
+      sdk.logr('-- DELETE call response: ', resp.status, resp.data);
+      if (resp.status != 200) new SignetError('E_SIGNET_API', resp.data);
+    } catch (err) {
+      sdk.logr('-- Error: ', err.toString());
+    }
+    sdk.logr('-- Finished removeEntity()');
+    sdk.logr('-- -------------------------------------------------');
+    return {};
   }
 
   /**
@@ -770,7 +820,7 @@ class SignetSDK {
     var entity = undefined;
     // Make the REST API call and wait for it to finish
     try {
-      let resp = await this.client.doGet('/entity/'+guid,params);
+      let resp = await this.client.doGet('/entity/?guid='+guid,params);
       sdk.logr('-- GET call response: ', resp.status, resp.data);
       entity = new SignetEntity(resp.data.guid, resp.data.verkey);
       entity.refresh(resp.data);
