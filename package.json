@@ -1,6 +1,6 @@
 {
   "name": "signet-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Signet SDK in Javascript, implemented as a node module.  It is meant to be used within React JS and React Native applications.",
   "main": "index.js",
   "scripts": {
